@@ -93,6 +93,7 @@ export async function createProductAction(formData: FormData) {
 
   revalidatePath("/admin/products");
   revalidatePath("/shop");
+  revalidatePath("/");
   redirect(`/admin/products/${product.id}/edit`);
 }
 
@@ -168,6 +169,7 @@ export async function updateProductAction(productId: string, formData: FormData)
   revalidatePath(`/admin/products/${productId}/edit`);
   revalidatePath("/shop");
   revalidatePath(`/shop/${slug}`);
+  revalidatePath("/");
 }
 
 export async function deleteProductAction(productId: string) {
@@ -185,4 +187,5 @@ export async function deleteProductAction(productId: string) {
 
   revalidatePath("/admin/products");
   revalidatePath("/shop");
+  revalidatePath("/");
 }
