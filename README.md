@@ -55,11 +55,20 @@ To set a new password:
 node scripts/hash-password.js "your-new-password"
 ```
 
-Copy the printed hash into `ADMIN_PASSWORD_HASH` in `.env` exactly as
-printed (it comes pre-escaped — Next.js expands `$` in `.env` files, so raw
-bcrypt hashes must have every `$` written as `\$`), and update
-`ADMIN_USERNAME` if you want a different username. The dev server picks up
-`.env` changes automatically; restart it in production.
+This prints **two versions** of the hash — use the right one for where
+you're pasting it:
+
+- **Local `.env` file**: use the escaped version (with `\$`). Next.js
+  expands `$` when it reads a `.env` file, so raw bcrypt hashes must have
+  every `$` written as `\$` or the value gets corrupted.
+- **Netlify / Vercel environment variable settings**: use the plain
+  (unescaped) version. Their dashboards store the value as-is and don't do
+  `$` expansion — pasting the escaped version here will save literal
+  backslashes into the value and break login.
+
+Update `ADMIN_USERNAME` too if you want a different username. The dev
+server picks up local `.env` changes automatically; on Netlify/Vercel
+you need to trigger a redeploy after changing an environment variable.
 
 ## Adding your logo
 
