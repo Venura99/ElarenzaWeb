@@ -20,6 +20,11 @@ export default async function OrderConfirmationPage({
   const whatsappLink = buildWhatsAppOrderLink({
     orderNumber: order.orderNumber,
     customerName: order.customerName,
+    phone: order.phone,
+    address: order.address,
+    city: order.city,
+    district: order.district,
+    notes: order.notes,
     items: order.items,
     totalAmount: order.totalAmount,
   });

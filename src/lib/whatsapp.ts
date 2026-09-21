@@ -1,23 +1,36 @@
 import { BUSINESS } from "@/lib/constants";
+import { formatLKR } from "@/lib/format";
 
 export function buildWhatsAppOrderLink(params: {
   orderNumber: string;
   customerName: string;
+  phone: string;
+  address: string;
+  city: string;
+  district: string;
+  notes?: string;
   items: { productName: string; variantLabel: string; quantity: number; lineTotal: number }[];
   totalAmount: number;
 }) {
   const lines = [
     `Hi Elarenza! I just placed an order.`,
     ``,
-    `Order No: ${params.orderNumber}`,
-    `Name: ${params.customerName}`,
+    `*Order No:* ${params.orderNumber}`,
     ``,
+    `*Order Details*`,
     ...params.items.map(
       (item) =>
-        `- ${item.productName} (${item.variantLabel}) x${item.quantity} = Rs. ${item.lineTotal.toLocaleString()}`
+        `- ${item.productName} (${item.variantLabel}) x${item.quantity} = ${formatLKR(item.lineTotal)}`
     ),
+    `*Total:* ${formatLKR(params.totalAmount)}`,
     ``,
-    `Total: Rs. ${params.totalAmount.toLocaleString()}`,
+    `*Delivery Details*`,
+    `Name: ${params.customerName}`,
+    `Phone: ${params.phone}`,
+    `Address: ${params.address}`,
+    `City: ${params.city}`,
+    `District: ${params.district}`,
+    ...(params.notes ? [`Notes: ${params.notes}`] : []),
     ``,
     `Please confirm my order. Thank you!`,
   ];
