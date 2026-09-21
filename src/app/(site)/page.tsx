@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import ProductCard, { type ProductCardData } from "@/components/site/ProductCard";
 
@@ -29,20 +30,30 @@ export default async function HomePage() {
   return (
     <div>
       <section className="relative overflow-hidden bg-ink">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-20 sm:px-6 md:grid-cols-2 md:py-28">
-          <div>
+        <Image
+          src="/images/home-image.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[72%_center] md:object-right"
+        />
+        <div className="absolute inset-0 bg-ink/80 md:bg-gradient-to-r md:from-ink md:via-ink/85 md:to-ink/10" />
+
+        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 md:min-h-[32rem] md:py-32 md:flex md:items-center">
+          <div className="max-w-xl">
             <p className="text-xs uppercase tracking-[0.3em] text-gold">
               Premium Perfume Decants &amp; Full Bottles
             </p>
             <h1 className="mt-4 font-serif text-4xl leading-tight text-cream sm:text-5xl">
               Find Your <span className="text-gold-light">Signature</span> Scent
             </h1>
-            <p className="mt-5 max-w-md text-cream/70">
+            <p className="mt-5 max-w-md text-cream/80">
               Explore a curated collection of luxury fragrances, available as
               affordable decants or full bottles — delivered islandwide across
               Sri Lanka.
             </p>
-            <div className="mt-8 flex gap-4">
+            <div className="mt-8 flex flex-wrap gap-4">
               <Link
                 href="/shop"
                 className="rounded-full bg-gold px-6 py-3 text-sm font-semibold uppercase tracking-wide text-ink transition hover:bg-gold-light"
@@ -55,13 +66,6 @@ export default async function HomePage() {
               >
                 Learn More
               </Link>
-            </div>
-          </div>
-          <div className="hidden md:block">
-            <div className="mx-auto flex h-72 w-72 items-center justify-center rounded-full border border-gold/40">
-              <div className="flex h-56 w-56 items-center justify-center rounded-full border border-gold/60 font-serif text-6xl text-gold-light">
-                E
-              </div>
             </div>
           </div>
         </div>
