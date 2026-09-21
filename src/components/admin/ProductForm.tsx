@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Spinner from "@/components/site/Spinner";
 
 type Variant = {
   id: string;
@@ -283,9 +284,9 @@ export default function ProductForm({
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-lg bg-ink px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-gold-dark disabled:opacity-60"
+          className="flex items-center justify-center rounded-lg bg-ink px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-gold-dark disabled:opacity-60"
         >
-          {isPending ? "Saving..." : submitLabel}
+          {isPending ? <Spinner label="Saving..." /> : submitLabel}
         </button>
       </div>
 

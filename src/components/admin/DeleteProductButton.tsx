@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteProductAction } from "@/app/admin/(dashboard)/products/actions";
+import Spinner from "@/components/site/Spinner";
 
 export default function DeleteProductButton({
   productId,
@@ -27,9 +28,9 @@ export default function DeleteProductButton({
       type="button"
       onClick={handleDelete}
       disabled={isPending}
-      className="text-red-600 hover:underline disabled:opacity-50"
+      className="inline-flex items-center text-red-600 hover:underline disabled:opacity-50"
     >
-      {isPending ? "Deleting..." : "Delete"}
+      {isPending ? <Spinner className="h-3.5 w-3.5" label="Deleting..." /> : "Delete"}
     </button>
   );
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { formatLKR } from "@/lib/format";
 import { SRI_LANKA_DISTRICTS } from "@/lib/constants";
+import Spinner from "@/components/site/Spinner";
 import { placeOrderAction } from "./actions";
 
 export default function CheckoutPage() {
@@ -116,9 +117,9 @@ export default function CheckoutPage() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full rounded-full bg-ink py-3.5 text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-gold-dark disabled:opacity-60"
+            className="flex w-full items-center justify-center rounded-full bg-ink py-3.5 text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-gold-dark disabled:opacity-60"
           >
-            {isPending ? "Placing Order..." : "Place Order"}
+            {isPending ? <Spinner label="Placing Order..." /> : "Place Order"}
           </button>
 
           <style jsx global>{`

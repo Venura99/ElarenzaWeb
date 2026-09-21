@@ -29,11 +29,11 @@ export default function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
           E
         </span>
       )}
-      <span className="flex flex-col leading-none">
-        <span className="font-serif text-2xl tracking-wide text-ink">
+      <span className="flex min-w-0 flex-col leading-none">
+        <span className="font-serif text-xl tracking-wide text-ink sm:text-2xl">
           {BUSINESS.name.toUpperCase()}
         </span>
-        <span className="text-[10px] tracking-[0.25em] text-gold-dark uppercase">
+        <span className="hidden text-[10px] tracking-[0.25em] text-gold-dark uppercase sm:block">
           {BUSINESS.tagline}
         </span>
       </span>

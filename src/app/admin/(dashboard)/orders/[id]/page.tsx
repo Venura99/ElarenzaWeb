@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { formatLKR } from "@/lib/format";
 import { updateOrderStatusAction } from "../actions";
 import { toWhatsAppNumber } from "@/lib/phone";
+import SubmitButton from "@/components/admin/SubmitButton";
 
 const STATUS_OPTIONS = [
   "PENDING",
@@ -95,12 +96,12 @@ export default async function AdminOrderDetailPage({
                   </option>
                 ))}
               </select>
-              <button
-                type="submit"
-                className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-cream hover:bg-gold-dark"
+              <SubmitButton
+                pendingLabel="Saving"
+                className="flex items-center justify-center rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-cream hover:bg-gold-dark disabled:opacity-60"
               >
                 Update
-              </button>
+              </SubmitButton>
             </form>
           </div>
 

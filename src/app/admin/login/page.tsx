@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { loginAction, type LoginState } from "./actions";
 import { BUSINESS } from "@/lib/constants";
+import Spinner from "@/components/site/Spinner";
 
 const initialState: LoginState = { error: null };
 
@@ -54,9 +55,9 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-lg bg-ink py-2.5 text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-gold-dark disabled:opacity-60"
+            className="flex w-full items-center justify-center rounded-lg bg-ink py-2.5 text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-gold-dark disabled:opacity-60"
           >
-            {pending ? "Signing in..." : "Sign In"}
+            {pending ? <Spinner label="Signing in..." /> : "Sign In"}
           </button>
         </form>
       </div>
