@@ -95,3 +95,12 @@ model OrderItem {
   quantity      Int
   lineTotal     Float
 }
+
+model Feedback {
+  id           String   @id @default(cuid())
+  customerName String
+  rating       Int
+  message      String
+  isApproved   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}

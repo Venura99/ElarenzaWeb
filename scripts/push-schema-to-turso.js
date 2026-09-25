@@ -40,7 +40,11 @@ async function main() {
       try {
         await client.execute(cleaned);
       } catch (err) {
-        if (String(err.message || err).includes("already exists")) {
+        const msg = String(err.message || err);
+        // SQLite reports already-applied DDL differently per statement type.
+        const alreadyApplied =
+          msg.includes("already exists") || msg.includes("duplicate column");
+        if (alreadyApplied) {
           console.log(`  (skipped, already applied): ${cleaned.slice(0, 60)}...`);
         } else {
           throw err;

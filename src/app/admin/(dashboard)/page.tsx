@@ -3,9 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { formatLKR } from "@/lib/format";
 
 export default async function AdminDashboardPage() {
-  const [productCount, pendingOrders, orders] = await Promise.all([
+  const [productCount, pendingOrders, pendingFeedback, orders] = await Promise.all([
     prisma.product.count(),
     prisma.order.count({ where: { status: "PENDING" } }),
+    prisma.feedback.count({ where: { isApproved: false } }),
     prisma.order.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
@@ -15,13 +16,14 @@ export default async function AdminDashboardPage() {
   const stats = [
     { label: "Products", value: productCount, href: "/admin/products" },
     { label: "Pending Orders", value: pendingOrders, href: "/admin/orders" },
+    { label: "Feedback to Review", value: pendingFeedback, href: "/admin/feedback" },
   ];
 
   return (
     <div>
       <h1 className="font-serif text-3xl text-ink">Dashboard</h1>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
           <Link
             key={stat.label}
