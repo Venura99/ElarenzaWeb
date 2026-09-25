@@ -103,4 +103,14 @@ model Feedback {
   message      String
   isApproved   Boolean  @default(false)
   createdAt    DateTime @default(now())
+
+  images       FeedbackImage[]
+}
+
+model FeedbackImage {
+  id         String   @id @default(cuid())
+  url        String
+  publicId   String?
+  feedbackId String
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
 }

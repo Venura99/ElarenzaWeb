@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import FeedbackForm from "@/components/site/FeedbackForm";
 import StarRating from "@/components/site/StarRating";
@@ -13,6 +14,7 @@ export default async function FeedbackPage() {
     where: { isApproved: true },
     orderBy: { createdAt: "desc" },
     take: 50,
+    include: { images: true },
   });
 
   const averageRating =
@@ -67,6 +69,28 @@ export default async function FeedbackPage() {
                 <p className="mt-3 whitespace-pre-line leading-relaxed text-ink-soft">
                   {item.message}
                 </p>
+
+                {item.images.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {item.images.map((image) => (
+                      <a
+                        key={image.id}
+                        href={image.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block overflow-hidden rounded-lg"
+                      >
+                        <Image
+                          src={image.url}
+                          alt={`Photo from ${item.customerName}`}
+                          width={160}
+                          height={160}
+                          className="h-24 w-24 object-cover transition hover:scale-105 sm:h-28 sm:w-28"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>

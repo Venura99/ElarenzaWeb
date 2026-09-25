@@ -24,11 +24,14 @@ function getCloudinary() {
   return cloudinary;
 }
 
-async function uploadToCloudinary(buffer: Buffer): Promise<StoredImage> {
+async function uploadToCloudinary(buffer: Buffer, folder: string): Promise<StoredImage> {
   const client = getCloudinary();
   return new Promise((resolve, reject) => {
     const stream = client.uploader.upload_stream(
-      { folder: "elarenza/products" },
+      // resource_type "image" makes Cloudinary reject anything that isn't a
+      // real image, which is the backstop for the public feedback upload —
+      // a browser-reported MIME type can be spoofed.
+      { folder, resource_type: "image" },
       (error, result) => {
         if (error || !result) {
           reject(error ?? new Error("Cloudinary upload failed"));
@@ -49,7 +52,11 @@ async function saveToLocalDisk(buffer: Buffer, originalName: string): Promise<St
   return { url: `/uploads/${filename}`, publicId: null };
 }
 
-export async function saveUploadedImages(files: File[]): Promise<StoredImage[]> {
+export async function saveUploadedImages(
+  files: File[],
+  options: { folder?: string } = {}
+): Promise<StoredImage[]> {
+  const folder = options.folder ?? "elarenza/products";
   const results: StoredImage[] = [];
   const useCloudinary = cloudinaryConfigured();
 
@@ -58,7 +65,7 @@ export async function saveUploadedImages(files: File[]): Promise<StoredImage[]> 
     const buffer = Buffer.from(await file.arrayBuffer());
     results.push(
       useCloudinary
-        ? await uploadToCloudinary(buffer)
+        ? await uploadToCloudinary(buffer, folder)
         : await saveToLocalDisk(buffer, file.name)
     );
   }

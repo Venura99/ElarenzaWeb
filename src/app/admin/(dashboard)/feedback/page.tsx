@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import StarRating from "@/components/site/StarRating";
 import FeedbackActions from "@/components/admin/FeedbackActions";
@@ -5,6 +6,7 @@ import FeedbackActions from "@/components/admin/FeedbackActions";
 export default async function AdminFeedbackPage() {
   const feedback = await prisma.feedback.findMany({
     orderBy: [{ isApproved: "asc" }, { createdAt: "desc" }],
+    include: { images: true },
   });
 
   const pendingCount = feedback.filter((f) => !f.isApproved).length;
@@ -69,6 +71,28 @@ export default async function AdminFeedbackPage() {
             <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-ink-soft">
               {item.message}
             </p>
+
+            {item.images.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {item.images.map((image) => (
+                  <a
+                    key={image.id}
+                    href={image.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block overflow-hidden rounded-lg border border-gold-light/40"
+                  >
+                    <Image
+                      src={image.url}
+                      alt=""
+                      width={120}
+                      height={120}
+                      className="h-20 w-20 object-cover"
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
