@@ -1,15 +1,14 @@
 require("dotenv").config();
 const path = require("path");
-const { PrismaClient } = require("@prisma/client");
-const { PrismaLibSQL } = require("@prisma/adapter-libsql");
+const { randomUUID } = require("crypto");
+const { createClient } = require("@libsql/client");
 
-// Mirrors src/lib/prisma.ts so this script seeds whichever database the app
-// is actually configured to use (Turso when set, otherwise the local file).
-const adapter = new PrismaLibSQL({
+// Seeds whichever database the app is configured to use (Turso when set,
+// otherwise the local file).
+const db = createClient({
   url: process.env.TURSO_DATABASE_URL || `file:${path.join(__dirname, "dev.db")}`,
   authToken: process.env.TURSO_AUTH_TOKEN || undefined,
 });
-const prisma = new PrismaClient({ adapter });
 
 function slugify(input) {
   return input.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
@@ -122,27 +121,48 @@ const PRODUCTS = [
 async function main() {
   for (const p of PRODUCTS) {
     const slug = slugify(p.name);
-    const exists = await prisma.product.findUnique({ where: { slug } });
-    if (exists) {
+    const existing = await db.execute({
+      sql: "SELECT id FROM Product WHERE slug = ?",
+      args: [slug],
+    });
+    if (existing.rows.length > 0) {
       console.log(`Skipping existing product: ${p.name}`);
       continue;
     }
-    await prisma.product.create({
-      data: {
-        slug,
-        name: p.name,
-        brand: p.brand,
-        description: p.description,
-        gender: p.gender,
-        concentration: p.concentration,
-        topNotes: p.topNotes,
-        middleNotes: p.middleNotes,
-        baseNotes: p.baseNotes,
-        featured: p.featured,
-        isActive: true,
-        variants: { create: p.variants },
+
+    const productId = randomUUID();
+    const timestamp = new Date().toISOString();
+
+    const statements = [
+      {
+        sql: `INSERT INTO Product (id, slug, name, brand, description, gender, concentration,
+                topNotes, middleNotes, baseNotes, featured, isActive, createdAt, updatedAt)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [
+          productId,
+          slug,
+          p.name,
+          p.brand,
+          p.description,
+          p.gender,
+          p.concentration,
+          p.topNotes,
+          p.middleNotes,
+          p.baseNotes,
+          p.featured ? 1 : 0,
+          1,
+          timestamp,
+          timestamp,
+        ],
       },
-    });
+      ...p.variants.map((v) => ({
+        sql: `INSERT INTO ProductVariant (id, type, sizeMl, price, stock, productId)
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: [randomUUID(), v.type, v.sizeMl, v.price, v.stock, productId],
+      })),
+    ];
+
+    await db.batch(statements);
     console.log(`Created: ${p.name}`);
   }
 }
@@ -152,4 +172,4 @@ main()
     console.error(e);
     process.exit(1);
   })
-  .finally(() => prisma.$disconnect());
+  .finally(() => db.close());

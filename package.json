@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "node prisma/seed.js",
-    "postinstall": "prisma generate",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
@@ -16,14 +15,11 @@
   "dependencies": {
     "@libsql/client": "^0.18.0",
     "@opennextjs/cloudflare": "^1.20.6",
-    "@prisma/adapter-libsql": "^6.19.3",
-    "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.11.0",
     "drizzle-orm": "^0.45.3",
     "jose": "^6.2.12",
     "next": "16.3.5",
-    "prisma": "^6.19.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "zod": "^4.6.2"
