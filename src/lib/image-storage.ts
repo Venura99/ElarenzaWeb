@@ -1,11 +1,17 @@
 import path from "path";
 import { randomUUID } from "crypto";
-import { writeFile, mkdir, unlink } from "fs/promises";
 import { v2 as cloudinary } from "cloudinary";
 
 export type StoredImage = { url: string; publicId: string | null };
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+
+// The local-disk fallback only runs in development. It is imported lazily so
+// that "fs" never enters the bundle on serverless/edge hosts, which have no
+// filesystem and fail to build when it is imported at the top level.
+async function fsPromises() {
+  return import("fs/promises");
+}
 
 function cloudinaryConfigured() {
   return Boolean(
@@ -45,6 +51,7 @@ async function uploadToCloudinary(buffer: Buffer, folder: string): Promise<Store
 }
 
 async function saveToLocalDisk(buffer: Buffer, originalName: string): Promise<StoredImage> {
+  const { mkdir, writeFile } = await fsPromises();
   await mkdir(UPLOAD_DIR, { recursive: true });
   const ext = path.extname(originalName) || ".jpg";
   const filename = `${randomUUID()}${ext}`;
@@ -78,6 +85,8 @@ export async function deleteStoredImage(image: { url: string; publicId: string |
     await getCloudinary().uploader.destroy(image.publicId).catch(() => {});
     return;
   }
+  if (!image.url.startsWith("/uploads/")) return;
+  const { unlink } = await fsPromises();
   const filePath = path.join(process.cwd(), "public", image.url);
   await unlink(filePath).catch(() => {});
 }
