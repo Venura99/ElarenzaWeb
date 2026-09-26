@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { prisma } from "@/lib/prisma";
+import { desc } from "drizzle-orm";
+import { db, schema } from "@/db";
 import { formatLKR } from "@/lib/format";
 import DeleteProductButton from "@/components/admin/DeleteProductButton";
 
@@ -9,9 +10,12 @@ import DeleteProductButton from "@/components/admin/DeleteProductButton";
 export const dynamic = "force-dynamic";
 
 export default async function AdminProductsPage() {
-  const products = await prisma.product.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { images: { orderBy: { position: "asc" }, take: 1 }, variants: true },
+  const products = await db.query.products.findMany({
+    orderBy: [desc(schema.products.createdAt)],
+    with: {
+      images: { orderBy: (img, { asc }) => [asc(img.position)], limit: 1 },
+      variants: true,
+    },
   });
 
   return (

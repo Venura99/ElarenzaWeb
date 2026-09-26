@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { db, schema } from "@/db";
+import { newId, now } from "@/db/helpers";
 import { saveUploadedImages } from "@/lib/image-storage";
 
 export type FeedbackState = { error: string | null; success: boolean };
@@ -67,16 +68,26 @@ export async function submitFeedbackAction(
     }
   }
 
-  await prisma.feedback.create({
-    data: {
-      customerName,
-      message,
-      rating,
-      images: {
-        create: uploaded.map((img) => ({ url: img.url, publicId: img.publicId })),
-      },
-    },
+  const feedbackId = newId();
+  await db.insert(schema.feedback).values({
+    id: feedbackId,
+    customerName,
+    message,
+    rating,
+    isApproved: false,
+    createdAt: now(),
   });
+
+  if (uploaded.length > 0) {
+    await db.insert(schema.feedbackImages).values(
+      uploaded.map((img) => ({
+        id: newId(),
+        url: img.url,
+        publicId: img.publicId,
+        feedbackId,
+      }))
+    );
+  }
 
   revalidatePath("/feedback");
   revalidatePath("/admin/feedback");

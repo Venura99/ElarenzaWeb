@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { eq } from "drizzle-orm";
+import { db, schema } from "@/db";
 import { formatLKR } from "@/lib/format";
 import { updateOrderStatusAction } from "../actions";
 import { toWhatsAppNumber } from "@/lib/phone";
@@ -20,9 +21,9 @@ export default async function AdminOrderDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const order = await prisma.order.findUnique({
-    where: { id },
-    include: { items: true },
+  const order = await db.query.orders.findFirst({
+    where: eq(schema.orders.id, id),
+    with: { items: true },
   });
 
   if (!order) notFound();

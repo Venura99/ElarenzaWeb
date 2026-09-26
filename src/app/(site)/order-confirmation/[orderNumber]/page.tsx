@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { eq } from "drizzle-orm";
+import { db, schema } from "@/db";
 import { formatLKR } from "@/lib/format";
 import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
 
@@ -10,9 +11,9 @@ export default async function OrderConfirmationPage({
   params: Promise<{ orderNumber: string }>;
 }) {
   const { orderNumber } = await params;
-  const order = await prisma.order.findUnique({
-    where: { orderNumber },
-    include: { items: true },
+  const order = await db.query.orders.findFirst({
+    where: eq(schema.orders.orderNumber, orderNumber),
+    with: { items: true },
   });
 
   if (!order) notFound();

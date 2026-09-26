@@ -8,6 +8,13 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  // Prisma's default entry is its Node build, which loads the query engine
+  // with fs.readFileSync — unavailable on workerd. Point it at the WASM build
+  // that Prisma ships for worker runtimes.
+  "alias": {
+    ".prisma/client/default": "./node_modules/.prisma/client/wasm.js",
+    "@prisma/client/default": "./node_modules/.prisma/client/wasm.js"
+  },
   "observability": {
     "enabled": true
   }

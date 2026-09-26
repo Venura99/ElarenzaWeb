@@ -1,6 +1,8 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { count, eq, inArray, sql } from "drizzle-orm";
+import { db, schema } from "@/db";
+import { newId, now } from "@/db/helpers";
 
 type CartItemInput = {
   variantId: string;
@@ -12,10 +14,13 @@ export type PlaceOrderResult =
   | { success: false; error: string };
 
 async function generateOrderNumber() {
-  const count = await prisma.order.count();
-  const next = count + 1;
-  const candidate = `ELZ-${String(next).padStart(5, "0")}`;
-  const exists = await prisma.order.findUnique({ where: { orderNumber: candidate } });
+  const [{ value: orderCount }] = await db
+    .select({ value: count() })
+    .from(schema.orders);
+  const candidate = `ELZ-${String(orderCount + 1).padStart(5, "0")}`;
+  const exists = await db.query.orders.findFirst({
+    where: eq(schema.orders.orderNumber, candidate),
+  });
   return exists ? `ELZ-${Date.now()}` : candidate;
 }
 
@@ -44,9 +49,9 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
   }
 
   const variantIds = cartItems.map((i) => i.variantId);
-  const variants = await prisma.productVariant.findMany({
-    where: { id: { in: variantIds } },
-    include: { product: true },
+  const variants = await db.query.productVariants.findMany({
+    where: inArray(schema.productVariants.id, variantIds),
+    with: { product: true },
   });
 
   const orderItems = [];
@@ -78,35 +83,44 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
 
   const orderNumber = await generateOrderNumber();
 
-  await prisma.$transaction([
-    prisma.order.create({
-      data: {
-        orderNumber,
-        customerName,
-        phone,
-        address,
-        city,
-        district,
-        notes,
-        totalAmount,
-        items: {
-          create: orderItems.map((item) => ({
-            productName: item.productName,
-            variantLabel: item.variantLabel,
-            unitPrice: item.unitPrice,
-            quantity: item.quantity,
-            lineTotal: item.lineTotal,
-          })),
-        },
-      },
+  const orderId = newId();
+  const timestamp = now();
+
+  // batch() is applied atomically by libSQL, so the order, its line items and
+  // the stock decrements cannot land partially.
+  await db.batch([
+    db.insert(schema.orders).values({
+      id: orderId,
+      orderNumber,
+      customerName,
+      phone,
+      address,
+      city,
+      district,
+      notes,
+      status: "PENDING",
+      totalAmount,
+      createdAt: timestamp,
+      updatedAt: timestamp,
     }),
-    ...orderItems.map((item) =>
-      prisma.productVariant.update({
-        where: { id: item.variantId },
-        data: { stock: { decrement: item.quantity } },
-      })
+    db.insert(schema.orderItems).values(
+      orderItems.map((item) => ({
+        id: newId(),
+        orderId,
+        productName: item.productName,
+        variantLabel: item.variantLabel,
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        lineTotal: item.lineTotal,
+      }))
     ),
-  ]);
+    ...orderItems.map((item) =>
+      db
+        .update(schema.productVariants)
+        .set({ stock: sql`${schema.productVariants.stock} - ${item.quantity}` })
+        .where(eq(schema.productVariants.id, item.variantId))
+    ),
+  ] as const);
 
   return { success: true, orderNumber };
 }

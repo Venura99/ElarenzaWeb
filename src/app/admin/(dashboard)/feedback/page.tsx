@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { prisma } from "@/lib/prisma";
+import { asc, desc } from "drizzle-orm";
+import { db, schema } from "@/db";
 import StarRating from "@/components/site/StarRating";
 import FeedbackActions from "@/components/admin/FeedbackActions";
 
@@ -8,9 +9,9 @@ import FeedbackActions from "@/components/admin/FeedbackActions";
 export const dynamic = "force-dynamic";
 
 export default async function AdminFeedbackPage() {
-  const feedback = await prisma.feedback.findMany({
-    orderBy: [{ isApproved: "asc" }, { createdAt: "desc" }],
-    include: { images: true },
+  const feedback = await db.query.feedback.findMany({
+    orderBy: [asc(schema.feedback.isApproved), desc(schema.feedback.createdAt)],
+    with: { images: true },
   });
 
   const pendingCount = feedback.filter((f) => !f.isApproved).length;

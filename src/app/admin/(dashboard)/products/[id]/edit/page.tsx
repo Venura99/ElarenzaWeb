@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { eq } from "drizzle-orm";
+import { db, schema } from "@/db";
 import ProductForm, { type ProductFormValues } from "@/components/admin/ProductForm";
 import { updateProductAction } from "../../actions";
 
@@ -9,9 +10,12 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = await prisma.product.findUnique({
-    where: { id },
-    include: { images: { orderBy: { position: "asc" } }, variants: true },
+  const product = await db.query.products.findFirst({
+    where: eq(schema.products.id, id),
+    with: {
+      images: { orderBy: (img, { asc }) => [asc(img.position)] },
+      variants: true,
+    },
   });
 
   if (!product) notFound();
@@ -21,7 +25,7 @@ export default async function EditProductPage({
     name: product.name,
     brand: product.brand,
     description: product.description,
-    gender: product.gender,
+    gender: product.gender as ProductFormValues["gender"],
     concentration: product.concentration,
     topNotes: product.topNotes,
     middleNotes: product.middleNotes,
@@ -31,7 +35,7 @@ export default async function EditProductPage({
     images: product.images.map((img) => ({ id: img.id, url: img.url })),
     variants: product.variants.map((v) => ({
       id: v.id,
-      type: v.type,
+      type: v.type as "DECANT" | "FULL_BOTTLE",
       sizeMl: v.sizeMl,
       price: v.price,
       stock: v.stock,

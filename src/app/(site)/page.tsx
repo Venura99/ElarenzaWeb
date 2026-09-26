@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { prisma } from "@/lib/prisma";
+import { and, desc, eq } from "drizzle-orm";
+import { db, schema } from "@/db";
 import ProductCard, { type ProductCardData } from "@/components/site/ProductCard";
 
 // Reads live data from the database on every request, so it must not be
@@ -15,18 +16,21 @@ const FEATURES = [
 ];
 
 export default async function HomePage() {
-  const products = await prisma.product.findMany({
-    where: { isActive: true, featured: true },
-    include: { images: { orderBy: { position: "asc" }, take: 1 }, variants: true },
-    take: 8,
-    orderBy: { createdAt: "desc" },
+  const products = await db.query.products.findMany({
+    where: and(eq(schema.products.isActive, true), eq(schema.products.featured, true)),
+    with: {
+      images: { orderBy: (img, { asc }) => [asc(img.position)], limit: 1 },
+      variants: true,
+    },
+    limit: 8,
+    orderBy: [desc(schema.products.createdAt)],
   });
 
   const cards: ProductCardData[] = products.map((p) => ({
     slug: p.slug,
     name: p.name,
     brand: p.brand,
-    gender: p.gender,
+    gender: p.gender as ProductCardData["gender"],
     imageUrl: p.images[0]?.url ?? null,
     minPrice: p.variants.length ? Math.min(...p.variants.map((v) => v.price)) : null,
   }));

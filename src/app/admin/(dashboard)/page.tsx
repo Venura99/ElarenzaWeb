@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { count, desc, eq } from "drizzle-orm";
+import { db, schema } from "@/db";
 import { formatLKR } from "@/lib/format";
 
 // Reads live data from the database on every request, so it must not be
@@ -7,15 +8,25 @@ import { formatLKR } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const [productCount, pendingOrders, pendingFeedback, orders] = await Promise.all([
-    prisma.product.count(),
-    prisma.order.count({ where: { status: "PENDING" } }),
-    prisma.feedback.count({ where: { isApproved: false } }),
-    prisma.order.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 5,
+  const [productRows, pendingOrderRows, pendingFeedbackRows, orders] = await Promise.all([
+    db.select({ value: count() }).from(schema.products),
+    db
+      .select({ value: count() })
+      .from(schema.orders)
+      .where(eq(schema.orders.status, "PENDING")),
+    db
+      .select({ value: count() })
+      .from(schema.feedback)
+      .where(eq(schema.feedback.isApproved, false)),
+    db.query.orders.findMany({
+      orderBy: [desc(schema.orders.createdAt)],
+      limit: 5,
     }),
   ]);
+
+  const productCount = productRows[0]?.value ?? 0;
+  const pendingOrders = pendingOrderRows[0]?.value ?? 0;
+  const pendingFeedback = pendingFeedbackRows[0]?.value ?? 0;
 
   const stats = [
     { label: "Products", value: productCount, href: "/admin/products" },

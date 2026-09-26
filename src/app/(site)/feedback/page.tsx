@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { prisma } from "@/lib/prisma";
+import { desc, eq } from "drizzle-orm";
+import { db, schema } from "@/db";
 import FeedbackForm from "@/components/site/FeedbackForm";
 import StarRating from "@/components/site/StarRating";
 
@@ -14,11 +15,11 @@ export const metadata = {
 };
 
 export default async function FeedbackPage() {
-  const feedback = await prisma.feedback.findMany({
-    where: { isApproved: true },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    include: { images: true },
+  const feedback = await db.query.feedback.findMany({
+    where: eq(schema.feedback.isApproved, true),
+    orderBy: [desc(schema.feedback.createdAt)],
+    limit: 50,
+    with: { images: true },
   });
 
   const averageRating =

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { prisma } from "@/lib/prisma";
+import { eq } from "drizzle-orm";
+import { db, schema } from "@/db";
 import AddToCartPanel from "@/components/site/AddToCartPanel";
 
 export default async function ProductDetailPage({
@@ -9,11 +10,11 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await prisma.product.findUnique({
-    where: { slug },
-    include: {
-      images: { orderBy: { position: "asc" } },
-      variants: { orderBy: { sizeMl: "asc" } },
+  const product = await db.query.products.findFirst({
+    where: eq(schema.products.slug, slug),
+    with: {
+      images: { orderBy: (img, { asc }) => [asc(img.position)] },
+      variants: { orderBy: (v, { asc }) => [asc(v.sizeMl)] },
     },
   });
 
@@ -92,7 +93,10 @@ export default async function ProductDetailPage({
               slug={product.slug}
               name={product.name}
               imageUrl={mainImage}
-              variants={product.variants}
+              variants={product.variants.map((v) => ({
+                ...v,
+                type: v.type as "DECANT" | "FULL_BOTTLE",
+              }))}
             />
           </div>
         </div>

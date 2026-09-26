@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { and, eq, inArray, ne } from "drizzle-orm";
+import { db, schema } from "@/db";
+import { newId, now } from "@/db/helpers";
 import { saveUploadedImages, deleteStoredImage } from "@/lib/image-storage";
 
 function slugify(input: string) {
@@ -17,8 +19,10 @@ async function uniqueSlug(base: string, ignoreId?: string) {
   let slug = slugify(base) || "product";
   let suffix = 1;
   while (
-    await prisma.product.findFirst({
-      where: { slug, ...(ignoreId ? { NOT: { id: ignoreId } } : {}) },
+    await db.query.products.findFirst({
+      where: ignoreId
+        ? and(eq(schema.products.slug, slug), ne(schema.products.id, ignoreId))
+        : eq(schema.products.slug, slug),
     })
   ) {
     suffix += 1;
@@ -67,29 +71,43 @@ export async function createProductAction(formData: FormData) {
   const slug = await uniqueSlug(name);
   const uploadedImages = await saveUploadedImages(imageFiles);
 
-  const product = await prisma.product.create({
-    data: {
-      slug,
-      name,
-      brand,
-      description,
-      gender: gender as "MALE" | "FEMALE" | "UNISEX",
-      concentration,
-      topNotes,
-      middleNotes,
-      baseNotes,
-      featured,
-      isActive,
-      images: {
-        create: uploadedImages.map((img, i) => ({
-          url: img.url,
-          publicId: img.publicId,
-          position: i,
-        })),
-      },
-      variants: { create: variants },
-    },
+  const productId = newId();
+  const timestamp = now();
+
+  await db.insert(schema.products).values({
+    id: productId,
+    slug,
+    name,
+    brand,
+    description,
+    gender,
+    concentration,
+    topNotes,
+    middleNotes,
+    baseNotes,
+    featured,
+    isActive,
+    createdAt: timestamp,
+    updatedAt: timestamp,
   });
+
+  if (uploadedImages.length > 0) {
+    await db.insert(schema.productImages).values(
+      uploadedImages.map((img, i) => ({
+        id: newId(),
+        url: img.url,
+        publicId: img.publicId,
+        position: i,
+        productId,
+      }))
+    );
+  }
+
+  await db.insert(schema.productVariants).values(
+    variants.map((v) => ({ id: newId(), ...v, productId }))
+  );
+
+  const product = { id: productId };
 
   revalidatePath("/admin/products");
   revalidatePath("/shop");
@@ -118,9 +136,9 @@ export async function updateProductAction(productId: string, formData: FormData)
     throw new Error("Name, brand, description and at least one variant are required.");
   }
 
-  const existing = await prisma.product.findUnique({
-    where: { id: productId },
-    include: { images: true },
+  const existing = await db.query.products.findFirst({
+    where: eq(schema.products.id, productId),
+    with: { images: true },
   });
   if (!existing) throw new Error("Product not found.");
 
@@ -129,7 +147,9 @@ export async function updateProductAction(productId: string, formData: FormData)
 
   if (removedImageIds.length > 0) {
     const toRemove = existing.images.filter((img) => removedImageIds.includes(img.id));
-    await prisma.productImage.deleteMany({ where: { id: { in: removedImageIds } } });
+    await db
+      .delete(schema.productImages)
+      .where(inArray(schema.productImages.id, removedImageIds));
     for (const img of toRemove) {
       await deleteStoredImage(img);
     }
@@ -137,33 +157,43 @@ export async function updateProductAction(productId: string, formData: FormData)
 
   const maxPosition = existing.images.length;
 
-  await prisma.product.update({
-    where: { id: productId },
-    data: {
+  await db
+    .update(schema.products)
+    .set({
       slug,
       name,
       brand,
       description,
-      gender: gender as "MALE" | "FEMALE" | "UNISEX",
+      gender,
       concentration,
       topNotes,
       middleNotes,
       baseNotes,
       featured,
       isActive,
-      images: {
-        create: uploadedImages.map((img, i) => ({
-          url: img.url,
-          publicId: img.publicId,
-          position: maxPosition + i,
-        })),
-      },
-      variants: {
-        deleteMany: {},
-        create: variants,
-      },
-    },
-  });
+      updatedAt: now(),
+    })
+    .where(eq(schema.products.id, productId));
+
+  if (uploadedImages.length > 0) {
+    await db.insert(schema.productImages).values(
+      uploadedImages.map((img, i) => ({
+        id: newId(),
+        url: img.url,
+        publicId: img.publicId,
+        position: maxPosition + i,
+        productId,
+      }))
+    );
+  }
+
+  // Variants are replaced wholesale, matching the form's edit semantics.
+  await db.batch([
+    db.delete(schema.productVariants).where(eq(schema.productVariants.productId, productId)),
+    db.insert(schema.productVariants).values(
+      variants.map((v) => ({ id: newId(), ...v, productId }))
+    ),
+  ]);
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${productId}/edit`);
@@ -173,13 +203,17 @@ export async function updateProductAction(productId: string, formData: FormData)
 }
 
 export async function deleteProductAction(productId: string) {
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    include: { images: true },
+  const product = await db.query.products.findFirst({
+    where: eq(schema.products.id, productId),
+    with: { images: true },
   });
   if (!product) return;
 
-  await prisma.product.delete({ where: { id: productId } });
+  await db.batch([
+    db.delete(schema.productImages).where(eq(schema.productImages.productId, productId)),
+    db.delete(schema.productVariants).where(eq(schema.productVariants.productId, productId)),
+    db.delete(schema.products).where(eq(schema.products.id, productId)),
+  ]);
 
   for (const img of product.images) {
     await deleteStoredImage(img);

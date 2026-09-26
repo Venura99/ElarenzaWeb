@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { and, desc, eq, like, or, type SQL } from "drizzle-orm";
+import { db, schema } from "@/db";
 import ProductCard, { type ProductCardData } from "@/components/site/ProductCard";
-import type { Prisma } from "@prisma/client";
 
 const GENDER_TABS = [
   { value: "", label: "All" },
@@ -17,26 +17,31 @@ export default async function ShopPage({
 }) {
   const { gender, q } = await searchParams;
 
-  const where: Prisma.ProductWhereInput = { isActive: true };
-  if (gender) where.gender = gender as "MALE" | "FEMALE" | "UNISEX";
+  const filters: SQL[] = [eq(schema.products.isActive, true)];
+  if (gender) filters.push(eq(schema.products.gender, gender));
   if (q) {
-    where.OR = [
-      { name: { contains: q } },
-      { brand: { contains: q } },
-    ];
+    const term = `%${q}%`;
+    const match = or(
+      like(schema.products.name, term),
+      like(schema.products.brand, term)
+    );
+    if (match) filters.push(match);
   }
 
-  const products = await prisma.product.findMany({
-    where,
-    include: { images: { orderBy: { position: "asc" }, take: 1 }, variants: true },
-    orderBy: { createdAt: "desc" },
+  const products = await db.query.products.findMany({
+    where: and(...filters),
+    with: {
+      images: { orderBy: (img, { asc }) => [asc(img.position)], limit: 1 },
+      variants: true,
+    },
+    orderBy: [desc(schema.products.createdAt)],
   });
 
   const cards: ProductCardData[] = products.map((p) => ({
     slug: p.slug,
     name: p.name,
     brand: p.brand,
-    gender: p.gender,
+    gender: p.gender as ProductCardData["gender"],
     imageUrl: p.images[0]?.url ?? null,
     minPrice: p.variants.length ? Math.min(...p.variants.map((v) => v.price)) : null,
   }));

@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { eq } from "drizzle-orm";
+import { db, schema } from "@/db";
+import { now } from "@/db/helpers";
 
 const VALID_STATUSES = [
   "PENDING",
@@ -18,10 +20,10 @@ export async function updateOrderStatusAction(orderId: string, formData: FormDat
     throw new Error("Invalid status.");
   }
 
-  await prisma.order.update({
-    where: { id: orderId },
-    data: { status: status as (typeof VALID_STATUSES)[number] },
-  });
+  await db
+    .update(schema.orders)
+    .set({ status, updatedAt: now() })
+    .where(eq(schema.orders.id, orderId));
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);

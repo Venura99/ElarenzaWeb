@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { desc } from "drizzle-orm";
+import { db, schema } from "@/db";
 import { formatLKR } from "@/lib/format";
 
 // Reads live data from the database on every request, so it must not be
@@ -16,9 +17,9 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default async function AdminOrdersPage() {
-  const orders = await prisma.order.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { items: true },
+  const orders = await db.query.orders.findMany({
+    orderBy: [desc(schema.orders.createdAt)],
+    with: { items: true },
   });
 
   return (

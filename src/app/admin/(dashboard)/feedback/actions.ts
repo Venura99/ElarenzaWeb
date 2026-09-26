@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { eq } from "drizzle-orm";
+import { db, schema } from "@/db";
 import { deleteStoredImage } from "@/lib/image-storage";
 
 async function revalidateFeedback() {
@@ -11,21 +12,24 @@ async function revalidateFeedback() {
 }
 
 export async function setFeedbackApprovalAction(feedbackId: string, isApproved: boolean) {
-  await prisma.feedback.update({
-    where: { id: feedbackId },
-    data: { isApproved },
-  });
+  await db
+    .update(schema.feedback)
+    .set({ isApproved })
+    .where(eq(schema.feedback.id, feedbackId));
   await revalidateFeedback();
 }
 
 export async function deleteFeedbackAction(feedbackId: string) {
-  const feedback = await prisma.feedback.findUnique({
-    where: { id: feedbackId },
-    include: { images: true },
+  const feedback = await db.query.feedback.findFirst({
+    where: eq(schema.feedback.id, feedbackId),
+    with: { images: true },
   });
   if (!feedback) return;
 
-  await prisma.feedback.delete({ where: { id: feedbackId } });
+  await db.batch([
+    db.delete(schema.feedbackImages).where(eq(schema.feedbackImages.feedbackId, feedbackId)),
+    db.delete(schema.feedback).where(eq(schema.feedback.id, feedbackId)),
+  ]);
 
   // The DB rows cascade, but the files themselves would otherwise linger in
   // Cloudinary and keep counting against the free-tier quota.
