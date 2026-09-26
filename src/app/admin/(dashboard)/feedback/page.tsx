@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma";
 import StarRating from "@/components/site/StarRating";
 import FeedbackActions from "@/components/admin/FeedbackActions";
 
+// Reads live data from the database on every request, so it must not be
+// prerendered at build time.
+export const dynamic = "force-dynamic";
+
 export default async function AdminFeedbackPage() {
   const feedback = await prisma.feedback.findMany({
     orderBy: [{ isApproved: "asc" }, { createdAt: "desc" }],

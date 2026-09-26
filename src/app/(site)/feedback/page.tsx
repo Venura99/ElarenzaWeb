@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma";
 import FeedbackForm from "@/components/site/FeedbackForm";
 import StarRating from "@/components/site/StarRating";
 
+// Reads live data from the database on every request, so it must not be
+// prerendered at build time.
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Customer Feedback | Elarenza",
   description:

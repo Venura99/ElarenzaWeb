@@ -2,6 +2,10 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatLKR } from "@/lib/format";
 
+// Reads live data from the database on every request, so it must not be
+// prerendered at build time.
+export const dynamic = "force-dynamic";
+
 const STATUS_STYLES: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
   CONFIRMED: "bg-blue-100 text-blue-800",

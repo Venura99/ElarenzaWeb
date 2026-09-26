@@ -4,6 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { formatLKR } from "@/lib/format";
 import DeleteProductButton from "@/components/admin/DeleteProductButton";
 
+// Reads live data from the database on every request, so it must not be
+// prerendered at build time.
+export const dynamic = "force-dynamic";
+
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },

@@ -3,6 +3,10 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import ProductCard, { type ProductCardData } from "@/components/site/ProductCard";
 
+// Reads live data from the database on every request, so it must not be
+// prerendered at build time.
+export const dynamic = "force-dynamic";
+
 const FEATURES = [
   { title: "Premium Quality", desc: "Authentic fragrances, sourced with care." },
   { title: "Carefully Decanted", desc: "Hygienic, precise decanting into travel-friendly bottles." },

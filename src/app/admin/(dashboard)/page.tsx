@@ -2,6 +2,10 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatLKR } from "@/lib/format";
 
+// Reads live data from the database on every request, so it must not be
+// prerendered at build time.
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboardPage() {
   const [productCount, pendingOrders, pendingFeedback, orders] = await Promise.all([
     prisma.product.count(),
