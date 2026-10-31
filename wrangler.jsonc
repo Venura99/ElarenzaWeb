@@ -8,6 +8,11 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  // Runtime configuration (Turso, Cloudinary, admin credentials) is set as
+  // secrets in the dashboard rather than committed here, because this repo is
+  // public. Without this flag wrangler treats the config as the source of
+  // truth and strips those values on every deploy, taking the site down.
+  "keep_vars": true,
   "observability": {
     "enabled": true
   }
