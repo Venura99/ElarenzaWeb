@@ -62,9 +62,18 @@ export const orders = sqliteTable("Order", {
   district: text("district").notNull(),
   notes: text("notes").notNull().default(""),
   status: text("status").notNull().default("PENDING"),
+  // Captured per order so that changing the current delivery charge never
+  // rewrites what past customers were quoted. totalAmount includes it.
+  deliveryFee: real("deliveryFee").notNull().default(0),
   totalAmount: real("totalAmount").notNull(),
   createdAt: isoTimestamp("createdAt").notNull(),
   updatedAt: isoTimestamp("updatedAt").notNull(),
+});
+
+// Simple key/value store for values the shop owner can change at runtime.
+export const settings = sqliteTable("Setting", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
 });
 
 export const orderItems = sqliteTable("OrderItem", {

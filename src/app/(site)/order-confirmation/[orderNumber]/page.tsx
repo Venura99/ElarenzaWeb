@@ -27,6 +27,7 @@ export default async function OrderConfirmationPage({
     district: order.district,
     notes: order.notes,
     items: order.items,
+    deliveryFee: order.deliveryFee,
     totalAmount: order.totalAmount,
   });
 
@@ -52,6 +53,20 @@ export default async function OrderConfirmationPage({
               <span className="font-medium text-ink">{formatLKR(item.lineTotal)}</span>
             </div>
           ))}
+        </div>
+        <div className="mt-3 space-y-2 border-t border-gold-light/40 pt-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-ink-soft">Subtotal</span>
+            <span className="font-medium text-ink">
+              {formatLKR(order.totalAmount - order.deliveryFee)}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-ink-soft">Delivery</span>
+            <span className="font-medium text-ink">
+              {order.deliveryFee > 0 ? formatLKR(order.deliveryFee) : "Free"}
+            </span>
+          </div>
         </div>
         <div className="mt-3 flex justify-between border-t border-gold-light/40 pt-3 font-serif text-lg text-ink">
           <span>Total</span>

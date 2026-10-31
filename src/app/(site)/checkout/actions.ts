@@ -3,6 +3,7 @@
 import { count, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { newId, now } from "@/db/helpers";
+import { getDeliveryFee } from "@/lib/settings";
 
 type CartItemInput = {
   variantId: string;
@@ -81,6 +82,10 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
     });
   }
 
+  // Read server-side rather than trusting anything the browser submitted.
+  const deliveryFee = await getDeliveryFee();
+  const grandTotal = totalAmount + deliveryFee;
+
   const orderNumber = await generateOrderNumber();
 
   const orderId = newId();
@@ -99,7 +104,8 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
       district,
       notes,
       status: "PENDING",
-      totalAmount,
+      deliveryFee,
+      totalAmount: grandTotal,
       createdAt: timestamp,
       updatedAt: timestamp,
     }),

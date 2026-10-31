@@ -115,6 +115,7 @@ export default function CartPage() {
         <div>
           <p className="text-sm text-ink-soft">Subtotal</p>
           <p className="font-serif text-2xl text-ink">{formatLKR(subtotal)}</p>
+          <p className="mt-1 text-xs text-ink-soft">Delivery charge added at checkout.</p>
         </div>
         <Link
           href="/checkout"

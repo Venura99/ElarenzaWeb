@@ -50,7 +50,21 @@ export default async function AdminOrderDetailPage({
               </div>
             ))}
           </div>
-          <div className="mt-4 flex justify-between border-t border-gold-light/40 pt-4 font-serif text-lg text-ink">
+          <div className="mt-4 space-y-2 border-t border-gold-light/40 pt-4 text-sm">
+            <div className="flex justify-between">
+              <span className="text-ink-soft">Subtotal</span>
+              <span className="font-medium text-ink">
+                {formatLKR(order.totalAmount - order.deliveryFee)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-ink-soft">Delivery</span>
+              <span className="font-medium text-ink">
+                {order.deliveryFee > 0 ? formatLKR(order.deliveryFee) : "Free"}
+              </span>
+            </div>
+          </div>
+          <div className="mt-3 flex justify-between border-t border-gold-light/40 pt-3 font-serif text-lg text-ink">
             <span>Total</span>
             <span>{formatLKR(order.totalAmount)}</span>
           </div>
