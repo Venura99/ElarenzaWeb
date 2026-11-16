@@ -4,6 +4,8 @@ export const BUSINESS = {
   addressLines: ["Wattala", "Wattala, Sri Lanka, 11300"],
   phoneDisplay: "+94 75 090 8002",
   phoneWhatsApp: "94750908002",
+  // The payment gateway redirects back here, so it must be the public origin.
+  siteUrl: process.env.SITE_URL || "https://elarenza.lk",
 };
 
 export const SRI_LANKA_DISTRICTS = [

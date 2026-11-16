@@ -66,6 +66,15 @@ export const orders = sqliteTable("Order", {
   // rewrites what past customers were quoted. totalAmount includes it.
   deliveryFee: real("deliveryFee").notNull().default(0),
   totalAmount: real("totalAmount").notNull(),
+  // COD or CARD. Existing orders predate online payment, so COD is the default.
+  paymentMethod: text("paymentMethod").notNull().default("COD"),
+  // PENDING until the gateway confirms; PAID / FAILED afterwards.
+  paymentStatus: text("paymentStatus").notNull().default("PENDING"),
+  // The exact field values sent to Payzy. The signature it returns is computed
+  // over these, so they must be replayed verbatim to verify the callback.
+  paymentPayload: text("paymentPayload"),
+  paymentReference: text("paymentReference"),
+  paidAt: isoTimestamp("paidAt"),
   createdAt: isoTimestamp("createdAt").notNull(),
   updatedAt: isoTimestamp("updatedAt").notNull(),
 });

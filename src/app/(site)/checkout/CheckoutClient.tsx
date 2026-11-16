@@ -9,7 +9,16 @@ import { SRI_LANKA_DISTRICTS } from "@/lib/constants";
 import Spinner from "@/components/site/Spinner";
 import { placeOrderAction } from "./actions";
 
-export default function CheckoutClient({ deliveryFee }: { deliveryFee: number }) {
+export default function CheckoutClient({
+  deliveryFee,
+  onlinePaymentAvailable,
+}: {
+  deliveryFee: number;
+  onlinePaymentAvailable: boolean;
+}) {
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "CARD">(
+    onlinePaymentAvailable ? "CARD" : "COD"
+  );
   const { items, subtotal, clearCart } = useCart();
   const grandTotal = subtotal + deliveryFee;
   const router = useRouter();
@@ -45,6 +54,11 @@ export default function CheckoutClient({ deliveryFee }: { deliveryFee: number })
         return;
       }
       clearCart();
+      if (result.redirectUrl) {
+        // Hand off to the payment gateway's hosted page.
+        window.location.href = result.redirectUrl;
+        return;
+      }
       router.push(`/order-confirmation/${result.orderNumber}`);
     });
   }
@@ -115,12 +129,70 @@ export default function CheckoutClient({ deliveryFee }: { deliveryFee: number })
             <textarea name="notes" rows={2} className="input" />
           </div>
 
+          {onlinePaymentAvailable && (
+            <div className="rounded-xl border border-gold-light/40 bg-white p-4">
+              <span className="mb-2 block text-sm font-medium text-ink-soft">
+                Payment Method *
+              </span>
+              <input type="hidden" name="paymentMethod" value={paymentMethod} />
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg p-2 hover:bg-cream-soft">
+                <input
+                  type="radio"
+                  checked={paymentMethod === "CARD"}
+                  onChange={() => setPaymentMethod("CARD")}
+                  className="mt-1"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-ink">Pay Online</span>
+                  <span className="block text-xs text-ink-soft">
+                    Card or bank payment via Payzy. You&apos;ll be redirected to their
+                    secure page.
+                  </span>
+                </span>
+              </label>
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg p-2 hover:bg-cream-soft">
+                <input
+                  type="radio"
+                  checked={paymentMethod === "COD"}
+                  onChange={() => setPaymentMethod("COD")}
+                  className="mt-1"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-ink">Cash on Delivery</span>
+                  <span className="block text-xs text-ink-soft">
+                    We&apos;ll confirm your order over WhatsApp.
+                  </span>
+                </span>
+              </label>
+            </div>
+          )}
+
+          {paymentMethod === "CARD" && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-ink-soft">
+                Email Address *
+              </label>
+              <input name="email" type="email" required className="input" />
+              <p className="mt-1 text-xs text-ink-soft">
+                Required by the payment gateway for your receipt.
+              </p>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={isPending}
             className="flex w-full items-center justify-center rounded-full bg-ink py-3.5 text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-gold-dark disabled:opacity-60"
           >
-            {isPending ? <Spinner label="Placing Order..." /> : "Place Order"}
+            {isPending ? (
+              <Spinner label={paymentMethod === "CARD" ? "Redirecting..." : "Placing Order..."} />
+            ) : paymentMethod === "CARD" ? (
+              `Pay ${formatLKR(grandTotal)}`
+            ) : (
+              "Place Order"
+            )}
           </button>
 
           <style jsx global>{`

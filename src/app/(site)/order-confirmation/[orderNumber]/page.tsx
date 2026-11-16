@@ -5,12 +5,17 @@ import { db, schema } from "@/db";
 import { formatLKR } from "@/lib/format";
 import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
 
+export const dynamic = "force-dynamic";
+
 export default async function OrderConfirmationPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ orderNumber: string }>;
+  searchParams: Promise<{ payment?: string }>;
 }) {
   const { orderNumber } = await params;
+  const { payment } = await searchParams;
   const order = await db.query.orders.findFirst({
     where: eq(schema.orders.orderNumber, orderNumber),
     with: { items: true },
@@ -31,12 +36,38 @@ export default async function OrderConfirmationPage({
     totalAmount: order.totalAmount,
   });
 
+  const paymentFailed =
+    order.paymentMethod === "CARD" && order.paymentStatus !== "PAID";
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl text-green-600">
-        ✓
-      </div>
-      <h1 className="mt-6 font-serif text-3xl text-ink">Order Placed Successfully!</h1>
+      {paymentFailed ? (
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 text-3xl text-yellow-700">
+          !
+        </div>
+      ) : (
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl text-green-600">
+          ✓
+        </div>
+      )}
+
+      {order.paymentMethod === "CARD" && order.paymentStatus === "PAID" && (
+        <p className="mt-6 rounded-lg bg-green-50 px-4 py-2 text-sm font-medium text-green-700">
+          Payment received — thank you!
+        </p>
+      )}
+      {paymentFailed && (
+        <p className="mt-6 rounded-lg bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+          {payment === "failed"
+            ? "Your payment did not go through, so this order is not confirmed yet."
+            : "We haven't received your payment yet. If you completed it, it may take a moment to show here."}{" "}
+          You can contact us on WhatsApp below and we&apos;ll sort it out.
+        </p>
+      )}
+
+      <h1 className="mt-6 font-serif text-3xl text-ink">
+        {paymentFailed ? "Order Not Yet Confirmed" : "Order Placed Successfully!"}
+      </h1>
       <p className="mt-2 text-ink-soft">
         Thank you, {order.customerName}. Your order number is{" "}
         <span className="font-semibold text-gold-dark">{order.orderNumber}</span>.

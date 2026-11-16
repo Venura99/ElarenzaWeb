@@ -7,6 +7,12 @@ import { formatLKR } from "@/lib/format";
 // prerendered at build time.
 export const dynamic = "force-dynamic";
 
+const PAYMENT_STYLES: Record<string, string> = {
+  PAID: "bg-green-100 text-green-800",
+  PENDING: "bg-yellow-100 text-yellow-800",
+  FAILED: "bg-red-100 text-red-800",
+};
+
 const STATUS_STYLES: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
   CONFIRMED: "bg-blue-100 text-blue-800",
@@ -35,6 +41,7 @@ export default async function AdminOrdersPage() {
               <th className="px-4 py-3">Phone</th>
               <th className="px-4 py-3">Items</th>
               <th className="px-4 py-3">Total</th>
+              <th className="px-4 py-3">Payment</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Placed</th>
             </tr>
@@ -61,6 +68,15 @@ export default async function AdminOrdersPage() {
                 <td className="px-4 py-3">{order.phone}</td>
                 <td className="px-4 py-3">{order.items.length}</td>
                 <td className="px-4 py-3">{formatLKR(order.totalAmount)}</td>
+                <td className="px-4 py-3">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs ${
+                      PAYMENT_STYLES[order.paymentStatus] ?? "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {order.paymentMethod === "COD" ? "COD" : order.paymentStatus}
+                  </span>
+                </td>
                 <td className="px-4 py-3">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${STATUS_STYLES[order.status]}`}>
                     {order.status}

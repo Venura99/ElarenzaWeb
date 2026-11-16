@@ -4,6 +4,12 @@ import { count, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { newId, now } from "@/db/helpers";
 import { getDeliveryFee } from "@/lib/settings";
+import {
+  buildPayzyFields,
+  createPayzyCheckout,
+  payzyConfigured,
+} from "@/lib/payzy";
+import { BUSINESS } from "@/lib/constants";
 
 type CartItemInput = {
   variantId: string;
@@ -11,7 +17,7 @@ type CartItemInput = {
 };
 
 export type PlaceOrderResult =
-  | { success: true; orderNumber: string }
+  | { success: true; orderNumber: string; redirectUrl?: string }
   | { success: false; error: string };
 
 async function generateOrderNumber() {
@@ -32,10 +38,21 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
   const city = String(formData.get("city") ?? "").trim();
   const district = String(formData.get("district") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
   const itemsRaw = String(formData.get("itemsJson") ?? "[]");
+  const paymentMethod = String(formData.get("paymentMethod") ?? "COD") === "CARD" ? "CARD" : "COD";
 
   if (!customerName || !phone || !address || !city || !district) {
     return { success: false, error: "Please fill in all required fields." };
+  }
+
+  if (paymentMethod === "CARD") {
+    if (!payzyConfigured()) {
+      return { success: false, error: "Online payment is unavailable right now. Please choose cash on delivery." };
+    }
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      return { success: false, error: "Please enter a valid email address for the payment receipt." };
+    }
   }
 
   let cartItems: CartItemInput[];
@@ -106,6 +123,8 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
       status: "PENDING",
       deliveryFee,
       totalAmount: grandTotal,
+      paymentMethod,
+      paymentStatus: "PENDING",
       createdAt: timestamp,
       updatedAt: timestamp,
     }),
@@ -128,5 +147,49 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
     ),
   ] as const);
 
-  return { success: true, orderNumber };
+  if (paymentMethod !== "CARD") {
+    return { success: true, orderNumber };
+  }
+
+  const [firstName, ...restName] = customerName.split(" ");
+
+  // The amount is taken from grandTotal, which was computed here from database
+  // prices — never from anything the browser submitted.
+  const fields = buildPayzyFields({
+    orderId: orderNumber,
+    amount: grandTotal,
+    responseUrl: `${BUSINESS.siteUrl}/api/payments/payzy/return`,
+    firstName: firstName || customerName,
+    lastName: restName.join(" ") || "-",
+    address,
+    city,
+    district,
+    phone,
+    email,
+    deliveryFee,
+  });
+
+  try {
+    const redirectUrl = await createPayzyCheckout(fields);
+
+    // Stored so the returned signature can be recomputed over the exact values
+    // that were signed.
+    await db
+      .update(schema.orders)
+      .set({ paymentPayload: JSON.stringify(fields), updatedAt: now() })
+      .where(eq(schema.orders.id, orderId));
+
+    return { success: true, orderNumber, redirectUrl };
+  } catch {
+    await db
+      .update(schema.orders)
+      .set({ paymentStatus: "FAILED", updatedAt: now() })
+      .where(eq(schema.orders.id, orderId));
+
+    return {
+      success: false,
+      error:
+        "We couldn't reach the payment gateway. Your order was not placed — please try again or choose cash on delivery.",
+    };
+  }
 }
