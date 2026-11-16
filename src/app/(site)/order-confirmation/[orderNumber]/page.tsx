@@ -106,8 +106,9 @@ export default async function OrderConfirmationPage({
       </div>
 
       <p className="mt-6 text-sm text-ink-soft">
-        Tap the button below to send us your order on WhatsApp so we can confirm payment
-        and delivery details.
+        {order.paymentStatus === "PAID"
+          ? "Your payment is complete — we'll start preparing your order. Message us on WhatsApp if you'd like to add delivery instructions."
+          : "Tap the button below to send us your order on WhatsApp so we can confirm payment and delivery details."}
       </p>
 
       <div className="mt-4 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
