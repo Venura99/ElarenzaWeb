@@ -166,7 +166,6 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
     district,
     phone,
     email,
-    deliveryFee,
   });
 
   try {

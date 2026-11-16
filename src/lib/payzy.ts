@@ -102,14 +102,14 @@ export function buildPayzyFields(input: {
   district: string;
   phone: string;
   email: string;
-  deliveryFee: number;
 }): PayzyFields {
   const { shopId, testMode } = config();
   return {
     x_test_mode: testMode ? "on" : "off",
     x_shopid: shopId,
-    // Gateways reject trailing-precision mismatches, so always send 2dp.
-    x_amount: input.amount.toFixed(2),
+    // Payzy parses this as a plain integer — sending "1100.00" was read as 0
+    // and made the installment total NaN on their payment page.
+    x_amount: String(Math.round(input.amount)),
     x_order_id: input.orderId,
     x_response_url: input.responseUrl,
     x_first_name: input.firstName,
@@ -130,7 +130,9 @@ export function buildPayzyFields(input: {
     x_ship_to_state: input.district,
     x_ship_to_city: input.city,
     x_ship_to_zip: "",
-    x_freight: input.deliveryFee.toFixed(2),
+    // Delivery is already included in x_amount. Sending it again here risks
+    // the gateway adding it a second time, so report it as zero.
+    x_freight: "0",
     x_platform: "custom",
     x_version: "1.0",
   };
