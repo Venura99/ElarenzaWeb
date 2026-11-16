@@ -79,7 +79,14 @@ function sign(canonical: string, key: string) {
 }
 
 function requestCanonical(fields: PayzyFields) {
-  const parts = PAYZY_FIELD_ORDER.map((name) => `${name}=${fields[name]}`);
+  const parts = PAYZY_FIELD_ORDER.map((name) =>
+    // Payzy's own signing omits the "=" after x_version, and their API rejects
+    // the signature without this quirk — it answers HTTP 201 with a dummy "e1"
+    // session instead of an error. Verified against the sandbox: with the
+    // quirk every call returns a unique session id, without it always "e1".
+    // The *response* signature does include the "=", so only this side differs.
+    name === "x_version" ? `x_version${fields[name]}` : `${name}=${fields[name]}`
+  );
   parts.push(`signed_field_names=${REQUEST_SIGNED_FIELD_NAMES}`);
   return parts.join(",");
 }
