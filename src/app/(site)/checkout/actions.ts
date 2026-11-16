@@ -3,7 +3,11 @@
 import { count, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { newId, now } from "@/db/helpers";
-import { getDeliveryFee } from "@/lib/settings";
+import {
+  getDeliveryFee,
+  getPayzyFeePercent,
+  calculatePayzyFee,
+} from "@/lib/settings";
 import {
   buildPayzyFields,
   createPayzyCheckout,
@@ -101,7 +105,16 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
 
   // Read server-side rather than trusting anything the browser submitted.
   const deliveryFee = await getDeliveryFee();
-  const grandTotal = totalAmount + deliveryFee;
+  const payableBeforeFee = totalAmount + deliveryFee;
+
+  // The gateway takes its cut of the whole transaction, so the fee is charged
+  // on the delivery too — and only on card orders.
+  const paymentFee =
+    paymentMethod === "CARD"
+      ? calculatePayzyFee(payableBeforeFee, await getPayzyFeePercent())
+      : 0;
+
+  const grandTotal = payableBeforeFee + paymentFee;
 
   const orderNumber = await generateOrderNumber();
 
@@ -125,6 +138,7 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
       totalAmount: grandTotal,
       paymentMethod,
       paymentStatus: "PENDING",
+      paymentFee,
       createdAt: timestamp,
       updatedAt: timestamp,
     }),

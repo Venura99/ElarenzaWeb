@@ -33,6 +33,7 @@ export default async function OrderConfirmationPage({
     notes: order.notes,
     items: order.items,
     deliveryFee: order.deliveryFee,
+    paymentFee: order.paymentFee,
     totalAmount: order.totalAmount,
   });
 
@@ -89,7 +90,7 @@ export default async function OrderConfirmationPage({
           <div className="flex justify-between">
             <span className="text-ink-soft">Subtotal</span>
             <span className="font-medium text-ink">
-              {formatLKR(order.totalAmount - order.deliveryFee)}
+              {formatLKR(order.totalAmount - order.deliveryFee - order.paymentFee)}
             </span>
           </div>
           <div className="flex justify-between">
@@ -98,6 +99,12 @@ export default async function OrderConfirmationPage({
               {order.deliveryFee > 0 ? formatLKR(order.deliveryFee) : "Free"}
             </span>
           </div>
+          {order.paymentFee > 0 && (
+            <div className="flex justify-between">
+              <span className="text-ink-soft">Payzy fee</span>
+              <span className="font-medium text-ink">{formatLKR(order.paymentFee)}</span>
+            </div>
+          )}
         </div>
         <div className="mt-3 flex justify-between border-t border-gold-light/40 pt-3 font-serif text-lg text-ink">
           <span>Total</span>

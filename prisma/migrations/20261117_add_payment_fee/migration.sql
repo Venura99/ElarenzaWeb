@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Order" ADD COLUMN "paymentFee" REAL NOT NULL DEFAULT 0;

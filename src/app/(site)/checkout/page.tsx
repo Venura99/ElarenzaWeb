@@ -1,4 +1,4 @@
-import { getDeliveryFee } from "@/lib/settings";
+import { getDeliveryFee, getPayzyFeePercent } from "@/lib/settings";
 import { payzyConfigured } from "@/lib/payzy";
 import CheckoutClient from "./CheckoutClient";
 
@@ -7,11 +7,16 @@ import CheckoutClient from "./CheckoutClient";
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage() {
-  const deliveryFee = await getDeliveryFee();
+  const [deliveryFee, payzyFeePercent] = await Promise.all([
+    getDeliveryFee(),
+    getPayzyFeePercent(),
+  ]);
+
   return (
     <CheckoutClient
       deliveryFee={deliveryFee}
       onlinePaymentAvailable={payzyConfigured()}
+      payzyFeePercent={payzyFeePercent}
     />
   );
 }

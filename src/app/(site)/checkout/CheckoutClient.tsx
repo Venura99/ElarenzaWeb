@@ -7,20 +7,29 @@ import { useCart } from "@/context/CartContext";
 import { formatLKR } from "@/lib/format";
 import { SRI_LANKA_DISTRICTS } from "@/lib/constants";
 import Spinner from "@/components/site/Spinner";
+import PayzyMark from "@/components/site/PayzyMark";
 import { placeOrderAction } from "./actions";
 
 export default function CheckoutClient({
   deliveryFee,
   onlinePaymentAvailable,
+  payzyFeePercent,
 }: {
   deliveryFee: number;
   onlinePaymentAvailable: boolean;
+  payzyFeePercent: number;
 }) {
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "CARD">(
     onlinePaymentAvailable ? "CARD" : "COD"
   );
   const { items, subtotal, clearCart } = useCart();
-  const grandTotal = subtotal + deliveryFee;
+  const payableBeforeFee = subtotal + deliveryFee;
+  // Mirrors the server calculation; the server's value is authoritative.
+  const payzyFee =
+    paymentMethod === "CARD"
+      ? Math.round((payableBeforeFee * payzyFeePercent) / 100)
+      : 0;
+  const grandTotal = payableBeforeFee + payzyFee;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -143,11 +152,18 @@ export default function CheckoutClient({
                   onChange={() => setPaymentMethod("CARD")}
                   className="mt-1"
                 />
-                <span>
-                  <span className="block text-sm font-medium text-ink">Pay Online</span>
-                  <span className="block text-xs text-ink-soft">
-                    Card or bank payment via Payzy. You&apos;ll be redirected to their
-                    secure page.
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2">
+                    <PayzyMark />
+                    {payzyFeePercent > 0 && (
+                      <span className="rounded-full bg-cream-soft px-2 py-0.5 text-[11px] text-ink-soft">
+                        +{payzyFeePercent}% fee
+                      </span>
+                    )}
+                  </span>
+                  <span className="mt-1 block text-xs text-ink-soft">
+                    Pay by card or in instalments. You&apos;ll be redirected to
+                    Payzy&apos;s secure page.
                   </span>
                 </span>
               </label>
@@ -236,6 +252,14 @@ export default function CheckoutClient({
                 {deliveryFee > 0 ? formatLKR(deliveryFee) : "Free"}
               </span>
             </div>
+            {payzyFee > 0 && (
+              <div className="flex justify-between">
+                <span className="text-ink-soft">
+                  Payzy fee ({payzyFeePercent}%)
+                </span>
+                <span className="font-medium text-ink">{formatLKR(payzyFee)}</span>
+              </div>
+            )}
           </div>
           <div className="mt-3 flex justify-between border-t border-gold-light/40 pt-3 font-serif text-lg text-ink">
             <span>Total</span>

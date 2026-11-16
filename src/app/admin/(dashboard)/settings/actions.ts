@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { setDeliveryFee } from "@/lib/settings";
+import { setDeliveryFee, setPayzyFeePercent } from "@/lib/settings";
 
 export type SettingsState = { error: string | null; saved: boolean };
 
@@ -29,6 +29,29 @@ export async function updateDeliveryFeeAction(
   revalidatePath("/admin/settings");
   revalidatePath("/checkout");
   revalidatePath("/cart");
+
+  return { error: null, saved: true };
+}
+
+export async function updatePayzyFeeAction(
+  _prevState: SettingsState,
+  formData: FormData
+): Promise<SettingsState> {
+  const raw = String(formData.get("payzyFeePercent") ?? "").trim();
+  const percent = Number(raw);
+
+  if (raw === "" || !Number.isFinite(percent)) {
+    return { error: "Enter the fee as a percentage.", saved: false };
+  }
+
+  if (percent < 0 || percent > 100) {
+    return { error: "The fee must be between 0 and 100 percent.", saved: false };
+  }
+
+  await setPayzyFeePercent(percent);
+
+  revalidatePath("/admin/settings");
+  revalidatePath("/checkout");
 
   return { error: null, saved: true };
 }

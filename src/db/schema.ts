@@ -72,6 +72,9 @@ export const orders = sqliteTable("Order", {
   paymentStatus: text("paymentStatus").notNull().default("PENDING"),
   // The exact field values sent to Payzy. The signature it returns is computed
   // over these, so they must be replayed verbatim to verify the callback.
+  // Gateway fee charged on card orders, captured per order so a later rate
+  // change never rewrites what a customer was quoted.
+  paymentFee: real("paymentFee").notNull().default(0),
   paymentPayload: text("paymentPayload"),
   paymentReference: text("paymentReference"),
   paidAt: isoTimestamp("paidAt"),

@@ -11,6 +11,7 @@ export function buildWhatsAppOrderLink(params: {
   notes?: string;
   items: { productName: string; variantLabel: string; quantity: number; lineTotal: number }[];
   deliveryFee: number;
+  paymentFee: number;
   totalAmount: number;
 }) {
   const lines = [
@@ -24,6 +25,7 @@ export function buildWhatsAppOrderLink(params: {
         `- ${item.productName} (${item.variantLabel}) x${item.quantity} = ${formatLKR(item.lineTotal)}`
     ),
     `Delivery: ${params.deliveryFee > 0 ? formatLKR(params.deliveryFee) : "Free"}`,
+    ...(params.paymentFee > 0 ? [`Payzy fee: ${formatLKR(params.paymentFee)}`] : []),
     `*Total:* ${formatLKR(params.totalAmount)}`,
     ``,
     `*Delivery Details*`,
