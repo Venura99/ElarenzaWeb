@@ -76,8 +76,23 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10 py-4 text-center text-xs text-cream/50">
-        © {new Date().getFullYear()} {BUSINESS.name}. All rights reserved.
+      <div className="border-t border-white/10 py-4">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 text-xs text-cream/50 sm:flex-row sm:justify-between sm:px-6">
+          <p>
+            © {new Date().getFullYear()} {BUSINESS.name}. All rights reserved.
+          </p>
+          <nav className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-gold-light">
+              Privacy Policy
+            </Link>
+            <span aria-hidden="true" className="text-cream/25">
+              |
+            </span>
+            <Link href="/terms" className="hover:text-gold-light">
+              Terms &amp; Conditions
+            </Link>
+          </nav>
+        </div>
       </div>
     </footer>
   );

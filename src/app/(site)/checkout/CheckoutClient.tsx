@@ -211,6 +211,18 @@ export default function CheckoutClient({
             )}
           </button>
 
+          <p className="text-center text-xs leading-relaxed text-ink-soft">
+            By placing this order you agree to our{" "}
+            <Link href="/terms" className="font-medium text-gold-dark hover:underline">
+              Terms &amp; Conditions
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="font-medium text-gold-dark hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+
           <style jsx global>{`
             .input {
               width: 100%;
