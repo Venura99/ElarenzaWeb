@@ -24,6 +24,9 @@ export default function ProductCard({ product }: { product: ProductCardData }) {
             alt={product.name}
             width={400}
             height={400}
+            // The grid is 2 columns on phones and 4 from lg up; without this a
+            // phone downloads the same width as a desktop.
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
           />
         ) : (

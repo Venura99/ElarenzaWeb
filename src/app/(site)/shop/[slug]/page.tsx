@@ -35,6 +35,7 @@ export default async function ProductDetailPage({
                 alt={product.name}
                 width={600}
                 height={600}
+                sizes="(min-width: 768px) 50vw, 100vw"
                 className="h-full w-full object-cover"
                 priority
               />
