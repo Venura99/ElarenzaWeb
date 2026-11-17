@@ -1,7 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { and, desc, eq, like, or, type SQL } from "drizzle-orm";
 import { db, schema } from "@/db";
 import ProductCard, { type ProductCardData } from "@/components/site/ProductCard";
+
+export const metadata: Metadata = {
+  title: "Shop All Perfumes",
+  description:
+    "Browse Elarenza's full range of perfume decants and full bottles — designer and niche fragrances for him, for her and unisex, delivered islandwide across Sri Lanka.",
+  // The search box and gender tabs are views of this same catalogue, so
+  // /shop?q=… and /shop?gender=… consolidate here instead of being indexed as
+  // near-duplicate pages.
+  alternates: { canonical: "/shop" },
+};
 
 const GENDER_TABS = [
   { value: "", label: "All" },

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
@@ -6,6 +7,13 @@ import { formatLKR } from "@/lib/format";
 import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
 
 export const dynamic = "force-dynamic";
+
+// These pages show a customer's name, phone number and delivery address, so
+// they must never be indexed.
+export const metadata: Metadata = {
+  title: "Order Confirmation",
+  robots: { index: false, follow: false, nocache: true },
+};
 
 export default async function OrderConfirmationPage({
   params,

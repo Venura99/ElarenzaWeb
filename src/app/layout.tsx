@@ -37,7 +37,9 @@ export const metadata: Metadata = {
     "full bottle perfume",
     "Elarenza",
   ],
-  alternates: { canonical: "/" },
+  // No canonical here on purpose: metadata is inherited, so a canonical set on
+  // the root layout would make every page that does not override it declare
+  // itself a duplicate of the home page. Each page sets its own.
   openGraph: {
     type: "website",
     siteName: BUSINESS.name,

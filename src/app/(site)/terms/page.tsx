@@ -8,6 +8,7 @@ import { PolicyShell, PolicySection, PolicyList } from "@/components/site/Policy
 export const metadata: Metadata = {
   title: "Terms & Conditions",
   description: `The terms that apply when you buy perfume decants or full bottles from ${BUSINESS.name}, including delivery, payment and our replacement policy.`,
+  alternates: { canonical: "/terms" },
 };
 
 // The delivery charge and online payment fee are quoted from the live settings

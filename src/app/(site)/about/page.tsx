@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import { BUSINESS } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description:
+    "Elarenza carefully decants authentic premium fragrances into travel-friendly sizes so you can explore more scents for less. Islandwide delivery across Sri Lanka.",
+  alternates: { canonical: "/about" },
+};
 
 export default function AboutPage() {
   return (

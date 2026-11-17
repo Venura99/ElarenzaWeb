@@ -6,6 +6,7 @@ import { PolicyShell, PolicySection, PolicyList } from "@/components/site/Policy
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: `How ${BUSINESS.name} collects, uses and protects your personal information when you order perfumes or leave a review.`,
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPolicyPage() {

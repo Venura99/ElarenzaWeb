@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { and, desc, eq } from "drizzle-orm";
@@ -8,6 +9,10 @@ import ProductCard, { type ProductCardData } from "@/components/site/ProductCard
 // Reads live data from the database on every request, so it must not be
 // prerendered at build time.
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 const FEATURES = [
   { title: "Premium Quality", desc: "Authentic fragrances, sourced with care." },

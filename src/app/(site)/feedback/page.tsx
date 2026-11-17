@@ -12,6 +12,7 @@ export const metadata = {
   title: "Customer Feedback",
   description:
     "Read what our customers say about Elarenza perfume decants and full bottles, and share your own experience.",
+  alternates: { canonical: "/feedback" },
 };
 
 export default async function FeedbackPage() {
