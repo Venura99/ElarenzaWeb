@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { BUSINESS } from "@/lib/constants";
 import ProductCard, { type ProductCardData } from "@/components/site/ProductCard";
 
 // Reads live data from the database on every request, so it must not be
@@ -35,8 +36,56 @@ export default async function HomePage() {
     minPrice: p.variants.length ? Math.min(...p.variants.map((v) => v.price)) : null,
   }));
 
+  // Tells search engines this is a real Sri Lankan shop with a phone number
+  // and an address, which is what surfaces a business panel for brand
+  // searches. The /shop?q= form lets Google offer a search box for the site.
+  const siteJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Store",
+        "@id": `${BUSINESS.siteUrl}/#store`,
+        name: BUSINESS.name,
+        description:
+          "Premium perfume decants and full bottles, carefully decanted and delivered islandwide across Sri Lanka.",
+        url: BUSINESS.siteUrl,
+        image: `${BUSINESS.siteUrl}/icon.png`,
+        telephone: `+${BUSINESS.phoneWhatsApp}`,
+        priceRange: "Rs. 500 - Rs. 50,000",
+        currenciesAccepted: "LKR",
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: BUSINESS.addressLines[0],
+          addressLocality: "Wattala",
+          postalCode: "11300",
+          addressCountry: "LK",
+        },
+        areaServed: { "@type": "Country", name: "Sri Lanka" },
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${BUSINESS.siteUrl}/#website`,
+        url: BUSINESS.siteUrl,
+        name: BUSINESS.name,
+        publisher: { "@id": `${BUSINESS.siteUrl}/#store` },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${BUSINESS.siteUrl}/shop?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
+      },
+    ],
+  };
+
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
+      />
       <section className="relative overflow-hidden bg-ink">
         <Image
           src="/images/home-image.png"

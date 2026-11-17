@@ -9,7 +9,7 @@ import StarRating from "@/components/site/StarRating";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Customer Feedback | Elarenza",
+  title: "Customer Feedback",
   description:
     "Read what our customers say about Elarenza perfume decants and full bottles, and share your own experience.",
 };

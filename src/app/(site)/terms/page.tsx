@@ -6,7 +6,7 @@ import { getDeliveryFee, getPayzyFeePercent } from "@/lib/settings";
 import { PolicyShell, PolicySection, PolicyList } from "@/components/site/PolicyPage";
 
 export const metadata: Metadata = {
-  title: `Terms & Conditions | ${BUSINESS.name}`,
+  title: "Terms & Conditions",
   description: `The terms that apply when you buy perfume decants or full bottles from ${BUSINESS.name}, including delivery, payment and our replacement policy.`,
 };
 

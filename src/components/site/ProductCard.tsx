@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { formatLKR } from "@/lib/format";
+import { cloudinaryBlurUrl } from "@/lib/cloudinary-blur";
 
 export type ProductCardData = {
   slug: string;
@@ -12,6 +13,8 @@ export type ProductCardData = {
 };
 
 export default function ProductCard({ product }: { product: ProductCardData }) {
+  const blurUrl = cloudinaryBlurUrl(product.imageUrl);
+
   return (
     <Link
       href={`/shop/${product.slug}`}
@@ -27,6 +30,9 @@ export default function ProductCard({ product }: { product: ProductCardData }) {
             // The grid is 2 columns on phones and 4 from lg up; without this a
             // phone downloads the same width as a desktop.
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+            // Shows the fragrance's shape and colour straight away instead of
+            // an empty cream rectangle while the photo arrives.
+            {...(blurUrl ? { placeholder: "blur" as const, blurDataURL: blurUrl } : {})}
             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
           />
         ) : (

@@ -4,7 +4,7 @@ import { BUSINESS } from "@/lib/constants";
 import { PolicyShell, PolicySection, PolicyList } from "@/components/site/PolicyPage";
 
 export const metadata: Metadata = {
-  title: `Privacy Policy | ${BUSINESS.name}`,
+  title: "Privacy Policy",
   description: `How ${BUSINESS.name} collects, uses and protects your personal information when you order perfumes or leave a review.`,
 };
 
