@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { BUSINESS } from "@/lib/constants";
+import { COLLECTIONS } from "@/lib/collections";
 
 export default function Footer() {
   return (
     <footer className="mt-16 border-t border-gold-light/40 bg-ink text-cream">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <span className="font-serif text-2xl tracking-wide text-gold-light">
             {BUSINESS.name.toUpperCase()}
@@ -20,12 +21,42 @@ export default function Footer() {
 
         <div>
           <h3 className="text-sm font-semibold uppercase tracking-wide text-gold-light">
-            Explore
+            Shop
           </h3>
+          {/* Also the crawl path to the collection pages, which nothing else
+              on the site links to from every page. */}
           <ul className="mt-4 space-y-2 text-sm text-cream/80">
             <li>
               <Link href="/shop" className="hover:text-gold-light">
-                Shop All Perfumes
+                All Perfumes
+              </Link>
+            </li>
+            {COLLECTIONS.map((collection) => (
+              <li key={collection.slug}>
+                <Link
+                  href={`/collections/${collection.slug}`}
+                  className="hover:text-gold-light"
+                >
+                  {collection.name}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link href="/brands" className="hover:text-gold-light">
+                Brands
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-gold-light">
+            Help
+          </h3>
+          <ul className="mt-4 space-y-2 text-sm text-cream/80">
+            <li>
+              <Link href="/faq" className="hover:text-gold-light">
+                FAQ
               </Link>
             </li>
             <li>

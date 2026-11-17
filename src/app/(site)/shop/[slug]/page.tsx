@@ -3,11 +3,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, ne, or } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { BUSINESS } from "@/lib/constants";
 import { cloudinaryBlurUrl } from "@/lib/cloudinary-blur";
+import { brandSlug, toProductCards } from "@/lib/collections";
 import AddToCartPanel from "@/components/site/AddToCartPanel";
+import ProductCard from "@/components/site/ProductCard";
+import Breadcrumbs from "@/components/site/Breadcrumbs";
 import StarRating from "@/components/site/StarRating";
 
 // generateMetadata and the page body both need the product. cache() keeps that
@@ -87,6 +90,32 @@ export default async function ProductDetailPage({
     limit: 3,
   });
 
+  // Same house first, then anything else aimed at the same person. Gives every
+  // product page outbound links into the catalogue instead of being a dead end.
+  const relatedPool = await db.query.products.findMany({
+    where: and(
+      eq(schema.products.isActive, true),
+      ne(schema.products.id, product.id),
+      or(
+        eq(schema.products.brand, product.brand),
+        eq(schema.products.gender, product.gender)
+      )
+    ),
+    with: {
+      images: { orderBy: (img, { asc }) => [asc(img.position)], limit: 1 },
+      variants: true,
+    },
+    limit: 12,
+  });
+
+  const related = toProductCards(
+    [...relatedPool].sort((a, b) => {
+      const aSameBrand = a.brand === product.brand ? 0 : 1;
+      const bSameBrand = b.brand === product.brand ? 0 : 1;
+      return aSameBrand - bSameBrand;
+    })
+  ).slice(0, 4);
+
   const mainBlur = cloudinaryBlurUrl(mainImage);
   const prices = product.variants.map((v) => v.price);
   const inStock = product.variants.some((v) => v.stock > 0);
@@ -127,6 +156,14 @@ export default async function ProductDetailPage({
         type="application/ld+json"
         // Values come from our own database, and JSON.stringify escapes them.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+
+      <Breadcrumbs
+        items={[
+          { name: "Shop", href: "/shop" },
+          { name: product.brand, href: `/brands/${brandSlug(product.brand)}` },
+          { name: product.name },
+        ]}
       />
       <div className="grid gap-10 md:grid-cols-2">
         <div>
@@ -207,6 +244,25 @@ export default async function ProductDetailPage({
           </div>
         </div>
       </div>
+
+      {related.length > 0 && (
+        <section className="mt-16 border-t border-gold-light/40 pt-10">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h2 className="font-serif text-2xl text-ink">You may also like</h2>
+            <Link
+              href={`/brands/${brandSlug(product.brand)}`}
+              className="text-sm font-medium text-gold-dark hover:underline"
+            >
+              More from {product.brand}
+            </Link>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+            {related.map((item) => (
+              <ProductCard key={item.slug} product={item} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {reviews.length > 0 && (
         <section className="mt-16 border-t border-gold-light/40 pt-10">

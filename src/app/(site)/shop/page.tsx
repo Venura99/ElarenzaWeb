@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { and, desc, eq, like, or, type SQL } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { COLLECTIONS } from "@/lib/collections";
 import ProductCard, { type ProductCardData } from "@/components/site/ProductCard";
 
 export const metadata: Metadata = {
@@ -61,6 +62,27 @@ export default async function ShopPage({
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
       <h1 className="font-serif text-4xl text-ink">Shop All Perfumes</h1>
       <p className="mt-2 text-ink-soft">Decants and full bottles, curated for every scent lover.</p>
+
+      {/* Links to the collection pages. The gender tabs below filter this page
+          via query strings, which are canonicalised away; these are the real,
+          indexable pages. */}
+      <div className="mt-6 flex flex-wrap gap-2">
+        {COLLECTIONS.map((collection) => (
+          <Link
+            key={collection.slug}
+            href={`/collections/${collection.slug}`}
+            className="rounded-full border border-gold-light/60 bg-white px-4 py-1.5 text-sm text-ink-soft transition hover:border-gold hover:text-gold-dark"
+          >
+            {collection.name}
+          </Link>
+        ))}
+        <Link
+          href="/brands"
+          className="rounded-full border border-gold-light/60 bg-white px-4 py-1.5 text-sm text-ink-soft transition hover:border-gold hover:text-gold-dark"
+        >
+          Brands
+        </Link>
+      </div>
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-2">

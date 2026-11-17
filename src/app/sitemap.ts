@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { BUSINESS } from "@/lib/constants";
+import { COLLECTIONS, brandSlug } from "@/lib/collections";
+import { getBrands } from "@/lib/catalog";
 
 // Product rows are read per request: on Workers there is no database
 // connection at build time, so this cannot be generated statically.
@@ -13,18 +15,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${base}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${base}/shop`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${base}/brands`, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${base}/faq`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/feedback`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${base}/about`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${base}/privacy`, changeFrequency: "yearly", priority: 0.3 },
     { url: `${base}/terms`, changeFrequency: "yearly", priority: 0.3 },
+    ...COLLECTIONS.map((collection) => ({
+      url: `${base}/collections/${collection.slug}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
   ];
 
   let products: { slug: string; updatedAt: Date }[] = [];
+  let brands: string[] = [];
   try {
-    products = await db.query.products.findMany({
-      where: eq(schema.products.isActive, true),
-      columns: { slug: true, updatedAt: true },
-    });
+    [products, brands] = await Promise.all([
+      db.query.products.findMany({
+        where: eq(schema.products.isActive, true),
+        columns: { slug: true, updatedAt: true },
+      }),
+      getBrands(),
+    ]);
   } catch {
     // A sitemap listing only the static pages is far better than a 500 that
     // makes search engines drop the file altogether.
@@ -33,6 +46,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticRoutes,
+    ...brands.map((brand) => ({
+      url: `${base}/brands/${brandSlug(brand)}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
     ...products.map((product) => ({
       url: `${base}/shop/${product.slug}`,
       lastModified: product.updatedAt,
