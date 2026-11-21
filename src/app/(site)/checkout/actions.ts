@@ -11,6 +11,7 @@ import {
 import {
   buildPayzyFields,
   createPayzyCheckout,
+  isPayzyTestMode,
   payzyConfigured,
 } from "@/lib/payzy";
 import { BUSINESS } from "@/lib/constants";
@@ -193,7 +194,20 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
       .where(eq(schema.orders.id, orderId));
 
     return { success: true, orderNumber, redirectUrl };
-  } catch {
+  } catch (error) {
+    // Previously swallowed entirely, which left a gateway failure with no
+    // trace anywhere — not in the logs, not on the order. The customer still
+    // only sees the generic message below; this is for Cloudflare's
+    // Observability tail, and names the mode so a credentials/host mismatch
+    // is obvious at a glance.
+    console.error("[payzy] checkout session failed", {
+      orderNumber,
+      shopId: process.env.PAYZY_SHOP_ID ?? "(unset)",
+      mode: isPayzyTestMode() ? "sandbox" : "live",
+      amount: grandTotal,
+      reason: error instanceof Error ? error.message : String(error),
+    });
+
     await db
       .update(schema.orders)
       .set({ paymentStatus: "FAILED", updatedAt: now() })
@@ -202,7 +216,7 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
     return {
       success: false,
       error:
-        "We couldn't reach the payment gateway. Your order was not placed — please try again or choose cash on delivery.",
+        "We couldn't start the card payment, so nothing has been charged. Please try again, or choose cash on delivery.",
     };
   }
 }

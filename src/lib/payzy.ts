@@ -162,12 +162,24 @@ export async function createPayzyCheckout(fields: PayzyFields): Promise<string> 
   });
 
   if (!res.ok) {
-    throw new Error(`Payzy checkout failed (HTTP ${res.status})`);
+    // Payzy explains the rejection in the body. Without it the log says only
+    // "HTTP 400" and the cause has to be guessed.
+    const detail = await res.text().catch(() => "");
+    throw new Error(
+      `Payzy checkout failed (HTTP ${res.status}) ${detail.slice(0, 300)}`.trim()
+    );
   }
 
-  const data = (await res.json()) as { url?: string };
+  const raw = await res.text();
+  let data: { url?: string };
+  try {
+    data = JSON.parse(raw) as { url?: string };
+  } catch {
+    throw new Error(`Payzy returned non-JSON: ${raw.slice(0, 300)}`);
+  }
+
   if (!data?.url) {
-    throw new Error("Payzy did not return a checkout URL");
+    throw new Error(`Payzy did not return a checkout URL: ${raw.slice(0, 300)}`);
   }
   return data.url;
 }
