@@ -30,9 +30,40 @@ export default async function AdminOrderDetailPage({
 
   const boundAction = updateOrderStatusAction.bind(null, order.id);
 
+  // When a card payment never got as far as a Payzy session, the reason is
+  // recorded on the order so it can be read here rather than in the Worker log.
+  let paymentFailure:
+    | { failure?: string; mode?: string; shopId?: string | null; at?: string }
+    | null = null;
+  if (order.paymentStatus === "FAILED" && order.paymentPayload) {
+    try {
+      const parsed = JSON.parse(order.paymentPayload);
+      if (parsed && typeof parsed.failure === "string") paymentFailure = parsed;
+    } catch {
+      // A payload that is not one of our failure records is simply not shown.
+    }
+  }
+
   return (
     <div>
       <h1 className="font-serif text-3xl text-ink">Order {order.orderNumber}</h1>
+
+      {paymentFailure && (
+        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-5">
+          <h2 className="font-serif text-lg text-ink">Card payment did not start</h2>
+          <p className="mt-1 text-xs uppercase tracking-wide text-red-800">
+            {paymentFailure.mode === "live" ? "Live gateway" : "Sandbox gateway"}
+            {paymentFailure.shopId ? ` · shop ${paymentFailure.shopId}` : ""}
+            {paymentFailure.at ? ` · ${paymentFailure.at}` : ""}
+          </p>
+          <p className="mt-3 break-words font-mono text-xs text-ink">
+            {paymentFailure.failure}
+          </p>
+          <p className="mt-3 text-sm text-ink-soft">
+            Nothing was charged. The customer can be offered cash on delivery.
+          </p>
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 rounded-2xl border border-gold-light/50 bg-white p-6">

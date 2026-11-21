@@ -200,17 +200,32 @@ export async function placeOrderAction(formData: FormData): Promise<PlaceOrderRe
     // only sees the generic message below; this is for Cloudflare's
     // Observability tail, and names the mode so a credentials/host mismatch
     // is obvious at a glance.
+    const reason = error instanceof Error ? error.message : String(error);
+
     console.error("[payzy] checkout session failed", {
       orderNumber,
       shopId: process.env.PAYZY_SHOP_ID ?? "(unset)",
       mode: isPayzyTestMode() ? "sandbox" : "live",
       amount: grandTotal,
-      reason: error instanceof Error ? error.message : String(error),
+      reason,
     });
 
     await db
       .update(schema.orders)
-      .set({ paymentStatus: "FAILED", updatedAt: now() })
+      .set({
+        paymentStatus: "FAILED",
+        // No session was created, so nothing will call back and there is no
+        // payload to verify a signature against. Recording the reason here
+        // instead puts it on the order in the admin panel, where it can be
+        // read without digging through the Worker's logs.
+        paymentPayload: JSON.stringify({
+          failure: reason,
+          mode: isPayzyTestMode() ? "sandbox" : "live",
+          shopId: process.env.PAYZY_SHOP_ID ?? null,
+          at: new Date().toISOString(),
+        }),
+        updatedAt: now(),
+      })
       .where(eq(schema.orders.id, orderId));
 
     return {
