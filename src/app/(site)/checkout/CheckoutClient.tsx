@@ -74,26 +74,37 @@ export default function CheckoutClient({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-      <h1 className="font-serif text-3xl text-ink">Checkout</h1>
-      <p className="mt-2 text-ink-soft">
-        Submit your order details below. We&apos;ll confirm availability and payment via
-        WhatsApp or phone call.
+      <p className="eyebrow">Checkout</p>
+      <h1 className="mt-3 font-serif text-3xl text-ink sm:text-4xl">
+        Delivery &amp; Payment
+      </h1>
+      <p className="mt-3 max-w-xl leading-relaxed text-ink-soft">
+        We confirm every order on WhatsApp before it ships, so you always know
+        where it stands.
       </p>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-3">
-        <form action={handleSubmit} className="space-y-4 lg:col-span-2">
+      <div className="mt-10 grid gap-10 lg:grid-cols-3">
+        <form action={handleSubmit} className="space-y-5 lg:col-span-2">
           {error && (
-            <p className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
+            <p
+              role="alert"
+              className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+            >
+              {error}
+            </p>
           )}
 
+          <fieldset className="space-y-5" disabled={isPending}>
+            <legend className="sr-only">Delivery details</legend>
+
           <div>
-            <label className="mb-1 block text-sm font-medium text-ink-soft">Full Name *</label>
-            <input name="customerName" required className="input" />
+            <label className="label">Full Name *</label>
+            <input name="customerName" required className="input" autoComplete="name" />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-ink-soft">
+              <label className="label">
                 Phone Number *
               </label>
               <input
@@ -105,7 +116,7 @@ export default function CheckoutClient({
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-ink-soft">District *</label>
+              <label className="label">District *</label>
               <select name="district" required className="input" defaultValue="">
                 <option value="" disabled>
                   Select district
@@ -120,19 +131,19 @@ export default function CheckoutClient({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-ink-soft">City / Town *</label>
+            <label className="label">City / Town *</label>
             <input name="city" required className="input" />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-ink-soft">
+            <label className="label">
               Delivery Address *
             </label>
             <textarea name="address" required rows={3} className="input" />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-ink-soft">
+            <label className="label">
               Order Notes (optional)
             </label>
             <textarea name="notes" rows={2} className="input" />
@@ -190,20 +201,27 @@ export default function CheckoutClient({
 
           {paymentMethod === "CARD" && (
             <div>
-              <label className="mb-1 block text-sm font-medium text-ink-soft">
+              <label className="label">
                 Email Address *
               </label>
-              <input name="email" type="email" required className="input" />
+              <input
+                name="email"
+                type="email"
+                required
+                className="input"
+                autoComplete="email"
+              />
               <p className="mt-1 text-xs text-ink-soft">
                 Required by the payment gateway for your receipt.
               </p>
             </div>
           )}
+          </fieldset>
 
           <button
             type="submit"
             disabled={isPending}
-            className="flex w-full items-center justify-center rounded-full bg-ink py-3.5 text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-gold-dark disabled:opacity-60"
+            className="btn btn-primary w-full py-4 text-sm"
           >
             {isPending ? (
               <Spinner label={paymentMethod === "CARD" ? "Redirecting..." : "Placing Order..."} />
@@ -226,23 +244,11 @@ export default function CheckoutClient({
             .
           </p>
 
-          <style jsx global>{`
-            .input {
-              width: 100%;
-              border: 1px solid rgba(198, 161, 91, 0.4);
-              border-radius: 0.5rem;
-              padding: 0.6rem 0.85rem;
-              font-size: 0.9rem;
-              background: white;
-            }
-            .input:focus {
-              outline: none;
-              border-color: var(--color-gold);
-            }
-          `}</style>
+          {/* .input now lives in globals.css so every form on the site shares
+              one control style, instead of only this page having it. */}
         </form>
 
-        <div className="h-fit rounded-2xl border border-gold-light/40 bg-cream-soft p-6">
+        <div className="h-fit rounded-lg border border-line bg-cream-soft p-6 lg:sticky lg:top-24">
           <h2 className="font-serif text-xl text-ink">Order Summary</h2>
           <div className="mt-4 space-y-3 text-sm">
             {items.map((item) => (

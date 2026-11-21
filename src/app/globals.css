@@ -1,16 +1,44 @@
 @import "tailwindcss";
 
+/**
+ * Design tokens.
+ *
+ * Class names across the site already read bg-cream / text-ink / border-gold-
+ * light, so the palette is refined here by value rather than by renaming
+ * things in every component. Two deliberate changes:
+ *
+ * - gold-dark was #96793c, about 3.8:1 on the ivory background, which fails
+ *   WCAG AA for body text. It carries links and small labels, so it is
+ *   darkened to clear 4.5:1.
+ * - ink-soft is warmed and darkened slightly; long product descriptions were
+ *   reading grey rather than brown-black against the ivory.
+ */
 :root {
-  --background: #faf6ef;
-  --foreground: #201b16;
+  --background: #faf7f2;
+  --foreground: #1c1714;
 
-  --color-ink: #201b16;
-  --color-ink-soft: #4a4038;
-  --color-cream: #faf6ef;
-  --color-cream-soft: #f1e8d6;
+  /* Surfaces */
+  --color-cream: #faf7f2;
+  --color-cream-soft: #f2ebdf;
+  --color-paper: #ffffff;
+
+  /* Ink */
+  --color-ink: #1c1714;
+  --color-ink-soft: #4b4138;
+  --color-ink-muted: #867a6d;
+
+  /* Champagne gold. Used sparingly — rules, small caps, one button. */
   --color-gold: #c6a15b;
   --color-gold-light: #e3cd97;
-  --color-gold-dark: #96793c;
+  --color-gold-dark: #7a6230;
+
+  /* Hairlines, warmer than a neutral grey against ivory. */
+  --color-line: rgba(28, 23, 20, 0.1);
+  --color-line-strong: rgba(28, 23, 20, 0.16);
+
+  /* Restrained elevation: a close contact shadow plus a wide soft one. */
+  --shadow-card: 0 1px 2px rgba(28, 23, 20, 0.04), 0 8px 24px -12px rgba(28, 23, 20, 0.18);
+  --shadow-lift: 0 2px 4px rgba(28, 23, 20, 0.05), 0 18px 40px -16px rgba(28, 23, 20, 0.26);
 }
 
 @theme inline {
@@ -18,11 +46,15 @@
   --color-foreground: var(--foreground);
   --color-ink: var(--color-ink);
   --color-ink-soft: var(--color-ink-soft);
+  --color-ink-muted: var(--color-ink-muted);
   --color-cream: var(--color-cream);
   --color-cream-soft: var(--color-cream-soft);
+  --color-paper: var(--color-paper);
   --color-gold: var(--color-gold);
   --color-gold-light: var(--color-gold-light);
   --color-gold-dark: var(--color-gold-dark);
+  --color-line: var(--color-line);
+  --color-line-strong: var(--color-line-strong);
   --font-serif: var(--font-playfair);
   --font-sans: var(--font-inter);
 }
@@ -31,8 +63,176 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 .font-serif {
   font-family: var(--font-serif), Georgia, serif;
+  /* Playfair sets loose by default at display sizes. */
+  letter-spacing: -0.015em;
+}
+
+h1.font-serif,
+h2.font-serif {
+  line-height: 1.12;
+}
+
+::selection {
+  background: var(--color-gold-light);
+  color: var(--color-ink);
+}
+
+/* One visible focus treatment everywhere, rather than the browser default
+   washing out against the ivory. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-gold-dark);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer components {
+  /* The small caps label above a section heading. Repeated on nearly every
+     page, previously as four utility classes each time. */
+  .eyebrow {
+    font-size: 0.6875rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-gold-dark);
+  }
+
+  .eyebrow-light {
+    font-size: 0.6875rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+
+  /* Form controls. These lived in a styled-jsx block inside the checkout
+     client, so no other form on the site could match them. */
+  .input {
+    width: 100%;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 0.375rem;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.95rem;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .input::placeholder {
+    color: var(--color-ink-muted);
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 3px rgba(198, 161, 91, 0.18);
+  }
+
+  .input:disabled {
+    background: var(--color-cream-soft);
+    cursor: not-allowed;
+  }
+
+  .label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  /* Buttons. Square-ish rather than pill, which reads less like a generic
+     storefront template. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.6rem;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .btn-primary {
+    background: var(--color-ink);
+    color: var(--color-cream);
+  }
+
+  .btn-primary:hover {
+    background: #2e2620;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .btn-gold {
+    background: var(--color-gold);
+    color: #fff;
+  }
+
+  .btn-gold:hover {
+    background: var(--color-gold-dark);
+  }
+
+  .btn-outline {
+    border: 1px solid var(--color-line-strong);
+    color: var(--color-ink);
+    background: transparent;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--color-ink);
+  }
+
+  /* A card with a hairline instead of a heavy gold border, and a radius small
+     enough not to read as a bubble. */
+  .surface {
+    background: var(--color-paper);
+    border: 1px solid var(--color-line);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Consistent vertical rhythm between page sections. */
+  .section {
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .section {
+      padding-top: 5rem;
+      padding-bottom: 5rem;
+    }
+  }
+
+  /* A thin gold rule used under section headings. */
+  .rule-gold::after {
+    content: "";
+    display: block;
+    width: 3rem;
+    height: 2px;
+    margin-top: 1rem;
+    background: var(--color-gold);
+  }
 }

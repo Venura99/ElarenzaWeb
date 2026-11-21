@@ -4,28 +4,26 @@ import { COLLECTIONS } from "@/lib/collections";
 
 export default function Footer() {
   return (
-    <footer className="mt-16 border-t border-gold-light/40 bg-ink text-cream">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
+    <footer className="mt-20 bg-ink text-cream">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 sm:py-16 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <span className="font-serif text-2xl tracking-wide text-gold-light">
             {BUSINESS.name.toUpperCase()}
           </span>
-          <p className="mt-2 text-xs uppercase tracking-[0.25em] text-gold">
-            {BUSINESS.tagline}
-          </p>
-          <p className="mt-4 max-w-xs text-sm text-cream/70">
+          <p className="eyebrow-light mt-2">{BUSINESS.tagline}</p>
+          <p className="mt-5 max-w-xs text-sm leading-relaxed text-cream/65">
             Premium perfume decants and full bottles, carefully decanted and
             made for you. Islandwide delivery across Sri Lanka.
           </p>
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-gold-light">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-light">
             Shop
           </h3>
           {/* Also the crawl path to the collection pages, which nothing else
               on the site links to from every page. */}
-          <ul className="mt-4 space-y-2 text-sm text-cream/80">
+          <ul className="mt-5 space-y-2.5 text-sm text-cream/70">
             <li>
               <Link href="/shop" className="hover:text-gold-light">
                 All Perfumes
@@ -50,10 +48,10 @@ export default function Footer() {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-gold-light">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-light">
             Help
           </h3>
-          <ul className="mt-4 space-y-2 text-sm text-cream/80">
+          <ul className="mt-5 space-y-2.5 text-sm text-cream/70">
             <li>
               <Link href="/faq" className="hover:text-gold-light">
                 FAQ
@@ -78,10 +76,10 @@ export default function Footer() {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-gold-light">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-light">
             Contact
           </h3>
-          <ul className="mt-4 space-y-2 text-sm text-cream/80">
+          <ul className="mt-5 space-y-2.5 text-sm text-cream/70">
             {BUSINESS.addressLines.map((line) => (
               <li key={line}>{line}</li>
             ))}

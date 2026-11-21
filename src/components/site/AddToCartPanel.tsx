@@ -61,45 +61,92 @@ export default function AddToCartPanel({
     setTimeout(() => setJustAdded(false), 2000);
   }
 
+  // Nobody should have to click each size to find out what it costs.
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div>
-        <p className="mb-2 text-sm font-medium text-ink-soft">Select Size</p>
-        <div className="flex flex-wrap gap-2">
-          {variants.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              onClick={() => setVariantId(v.id)}
-              className={`rounded-full border px-4 py-2 text-sm transition ${
-                v.id === selected.id
-                  ? "border-gold bg-gold text-white"
-                  : "border-gold-light/60 text-ink-soft hover:border-gold"
-              } ${v.stock <= 0 ? "opacity-40" : ""}`}
-            >
-              {variantLabel(v.type, v.sizeMl)}
-              {v.stock <= 0 ? " (Sold out)" : ""}
-            </button>
-          ))}
+        <p className="label">Select size</p>
+        <div
+          role="radiogroup"
+          aria-label="Select size"
+          className="grid gap-2 sm:grid-cols-2"
+        >
+          {variants.map((v) => {
+            const isSelected = v.id === selected.id;
+            const soldOut = v.stock <= 0;
+            return (
+              <button
+                key={v.id}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                disabled={soldOut}
+                onClick={() => {
+                  setVariantId(v.id);
+                  setQuantity(1);
+                }}
+                className={`flex items-center justify-between rounded-md border px-4 py-3 text-left transition ${
+                  isSelected
+                    ? "border-ink bg-ink text-cream"
+                    : "border-line-strong text-ink hover:border-ink"
+                } ${soldOut ? "cursor-not-allowed opacity-45" : ""}`}
+              >
+                <span className="text-sm font-medium">
+                  {variantLabel(v.type, v.sizeMl)}
+                  {soldOut && (
+                    <span className="ml-1 text-xs font-normal">· Sold out</span>
+                  )}
+                </span>
+                <span
+                  className={`text-sm font-semibold ${
+                    isSelected ? "text-gold-light" : "text-ink"
+                  }`}
+                >
+                  {formatLKR(v.price)}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <p className="font-serif text-3xl text-gold-dark">{formatLKR(selected.price)}</p>
+      <div className="flex items-baseline gap-3 border-y border-line py-4">
+        <p className="font-serif text-3xl text-ink">{formatLKR(selected.price)}</p>
+        <p className="text-sm text-ink-muted">
+          {variantLabel(selected.type, selected.sizeMl)}
+        </p>
+      </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center rounded-full border border-gold-light/60">
+      {!outOfStock && selected.stock <= 5 && (
+        <p className="text-sm font-medium text-gold-dark">
+          Only {selected.stock} left in stock
+        </p>
+      )}
+
+      <div className="flex items-stretch gap-3">
+        <div className="flex items-center rounded-md border border-line-strong">
           <button
             type="button"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="h-10 w-10 text-lg text-ink-soft"
+            aria-label="Decrease quantity"
+            disabled={quantity <= 1}
+            className="h-12 w-11 text-lg leading-none text-ink-soft transition hover:bg-cream-soft hover:text-ink disabled:opacity-40"
           >
             −
           </button>
-          <span className="w-8 text-center text-sm">{quantity}</span>
+          <span
+            aria-live="polite"
+            className="w-9 text-center text-sm font-medium tabular-nums text-ink"
+          >
+            {quantity}
+          </span>
           <button
             type="button"
-            onClick={() => setQuantity((q) => q + 1)}
-            className="h-10 w-10 text-lg text-ink-soft"
+            // Never let someone add more than we can actually ship.
+            onClick={() => setQuantity((q) => Math.min(selected.stock, q + 1))}
+            aria-label="Increase quantity"
+            disabled={quantity >= selected.stock}
+            className="h-12 w-11 text-lg leading-none text-ink-soft transition hover:bg-cream-soft hover:text-ink disabled:opacity-40"
           >
             +
           </button>
@@ -109,9 +156,9 @@ export default function AddToCartPanel({
           type="button"
           onClick={handleAdd}
           disabled={outOfStock}
-          className="flex-1 rounded-full bg-ink py-3 text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-gold-dark disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn btn-primary flex-1"
         >
-          {outOfStock ? "Sold Out" : justAdded ? "Added ✓" : "Add to Cart"}
+          {outOfStock ? "Sold Out" : justAdded ? "Added to cart ✓" : "Add to Cart"}
         </button>
       </div>
 
@@ -119,11 +166,15 @@ export default function AddToCartPanel({
         <button
           type="button"
           onClick={() => router.push("/cart")}
-          className="w-full rounded-full border border-gold px-4 py-2 text-sm text-gold-dark hover:bg-gold hover:text-white"
+          className="btn btn-outline w-full"
         >
-          View Cart
+          View Cart &amp; Checkout
         </button>
       )}
+
+      <p className="text-xs leading-relaxed text-ink-muted">
+        Cash on delivery available · Islandwide delivery in 2–5 working days
+      </p>
     </div>
   );
 }

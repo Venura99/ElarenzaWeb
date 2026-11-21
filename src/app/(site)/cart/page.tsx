@@ -10,24 +10,35 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
-        <h1 className="font-serif text-3xl text-ink">Your Cart is Empty</h1>
-        <p className="mt-3 text-ink-soft">Browse our collection and find your signature scent.</p>
-        <Link
-          href="/shop"
-          className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-semibold uppercase tracking-wide text-cream hover:bg-gold-dark"
-        >
-          Shop Now
-        </Link>
+      <div className="mx-auto max-w-3xl px-4 py-24 text-center sm:px-6">
+        <p className="eyebrow">Your Cart</p>
+        <h1 className="mt-3 font-serif text-3xl text-ink sm:text-4xl">
+          Nothing here yet
+        </h1>
+        <p className="mx-auto mt-4 max-w-sm leading-relaxed text-ink-soft">
+          Browse the collection and find your signature scent — start with a
+          decant if you&apos;re trying something new.
+        </p>
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link href="/shop" className="btn btn-primary">
+            Shop All Perfumes
+          </Link>
+          <Link href="/collections/decants" className="btn btn-outline">
+            Browse Decants
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-      <h1 className="font-serif text-3xl text-ink">Your Cart</h1>
+    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+      <p className="eyebrow">Your Cart</p>
+      <h1 className="mt-3 font-serif text-3xl text-ink sm:text-4xl">
+        {items.length} {items.length === 1 ? "item" : "items"}
+      </h1>
 
-      <div className="mt-8 divide-y divide-gold-light/30 rounded-2xl border border-gold-light/40 bg-white">
+      <div className="mt-8 divide-y divide-line rounded-lg border border-line bg-paper">
         {items.map((item) => (
           <div
             key={item.variantId}
@@ -74,21 +85,27 @@ export default function CartPage() {
             </div>
 
             <div className="flex items-center justify-between gap-3 sm:justify-end sm:gap-4">
-              <div className="flex items-center rounded-full border border-gold-light/60">
+              {/* 40px targets so these are usable with a thumb. */}
+              <div className="flex items-center rounded-md border border-line-strong">
                 <button
                   type="button"
                   onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
-                  aria-label="Decrease quantity"
-                  className="h-9 w-9 text-ink-soft"
+                  aria-label={`Decrease quantity of ${item.name}`}
+                  className="h-10 w-10 text-lg leading-none text-ink-soft transition hover:bg-cream-soft hover:text-ink"
                 >
                   −
                 </button>
-                <span className="w-8 text-center text-sm">{item.quantity}</span>
+                <span
+                  aria-live="polite"
+                  className="w-9 text-center text-sm font-medium tabular-nums text-ink"
+                >
+                  {item.quantity}
+                </span>
                 <button
                   type="button"
                   onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                  aria-label="Increase quantity"
-                  className="h-9 w-9 text-ink-soft"
+                  aria-label={`Increase quantity of ${item.name}`}
+                  className="h-10 w-10 text-lg leading-none text-ink-soft transition hover:bg-cream-soft hover:text-ink"
                 >
                   +
                 </button>
@@ -111,18 +128,27 @@ export default function CartPage() {
         ))}
       </div>
 
-      <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-gold-light/40 bg-cream-soft p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <div className="mt-6 flex flex-col gap-5 rounded-lg border border-line bg-cream-soft p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6">
         <div>
-          <p className="text-sm text-ink-soft">Subtotal</p>
-          <p className="font-serif text-2xl text-ink">{formatLKR(subtotal)}</p>
-          <p className="mt-1 text-xs text-ink-soft">Delivery charge added at checkout.</p>
+          <p className="text-[0.6875rem] uppercase tracking-[0.16em] text-ink-muted">
+            Subtotal
+          </p>
+          <p className="mt-1 font-serif text-3xl text-ink">{formatLKR(subtotal)}</p>
+          <p className="mt-2 text-xs text-ink-soft">
+            Delivery calculated at checkout. Cash on delivery available.
+          </p>
         </div>
-        <Link
-          href="/checkout"
-          className="rounded-full bg-ink px-8 py-3 text-center text-sm font-semibold uppercase tracking-wide text-cream hover:bg-gold-dark"
-        >
-          Proceed to Checkout
-        </Link>
+        <div className="flex flex-col gap-3 sm:items-end">
+          <Link href="/checkout" className="btn btn-primary w-full sm:w-auto">
+            Proceed to Checkout
+          </Link>
+          <Link
+            href="/shop"
+            className="text-center text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+          >
+            Continue shopping
+          </Link>
+        </div>
       </div>
     </div>
   );

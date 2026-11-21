@@ -102,60 +102,68 @@ export default async function HomePage() {
           sizes="100vw"
           className="object-cover object-[72%_center] md:object-right"
         />
-        <div className="absolute inset-0 bg-ink/80 md:bg-gradient-to-r md:from-ink md:via-ink/85 md:to-ink/10" />
+        {/* Darker and deeper on phones, where the copy sits over the middle of
+            the photograph rather than beside it. */}
+        <div className="absolute inset-0 bg-ink/75 md:bg-gradient-to-r md:from-ink md:via-ink/88 md:to-ink/15" />
 
-        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 md:min-h-[32rem] md:py-32 md:flex md:items-center">
+        <div className="relative mx-auto flex min-h-[30rem] max-w-6xl items-center px-4 py-20 sm:px-6 md:min-h-[34rem] md:py-28">
           <div className="max-w-xl">
-            <p className="text-xs uppercase tracking-[0.3em] text-gold">
-              Premium Perfume Decants &amp; Full Bottles
-            </p>
-            <h1 className="mt-4 font-serif text-4xl leading-tight text-cream sm:text-5xl">
-              Find Your <span className="text-gold-light">Signature</span> Scent
+            <p className="eyebrow-light">Premium Decants &amp; Full Bottles</p>
+            <h1 className="mt-5 font-serif text-[2.5rem] text-cream sm:text-6xl">
+              Find Your{" "}
+              <span className="italic text-gold-light">Signature</span> Scent
             </h1>
-            <p className="mt-5 max-w-md text-cream/80">
-              Explore a curated collection of luxury fragrances, available as
-              affordable decants or full bottles — delivered islandwide across
-              Sri Lanka.
+            <p className="mt-6 max-w-md leading-relaxed text-cream/75">
+              A curated collection of designer and niche fragrances, available
+              as affordable decants or full bottles. Try before you commit —
+              delivered islandwide across Sri Lanka.
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                href="/shop"
-                className="rounded-full bg-gold px-6 py-3 text-sm font-semibold uppercase tracking-wide text-ink transition hover:bg-gold-light"
-              >
-                Shop Now
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <Link href="/shop" className="btn btn-gold">
+                Shop the Collection
               </Link>
               <Link
-                href="/about"
-                className="rounded-full border border-cream/30 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-white/10"
+                href="/collections/decants"
+                className="btn border border-cream/25 text-cream transition hover:border-cream/60"
               >
-                Learn More
+                What is a Decant?
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="border-b border-gold-light/40 bg-cream-soft">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 py-10 sm:px-6 md:grid-cols-4">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="text-center">
-              <p className="font-serif text-lg text-ink">{f.title}</p>
-              <p className="mt-1 text-xs text-ink-soft">{f.desc}</p>
+      <section className="border-b border-line bg-cream-soft">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-12 sm:px-6 md:grid-cols-4 md:gap-8">
+          {FEATURES.map((f, i) => (
+            <div
+              key={f.title}
+              className={`px-1 md:px-6 ${
+                i > 0 ? "md:border-l md:border-line" : ""
+              }`}
+            >
+              <p className="font-serif text-[1.0625rem] text-ink">{f.title}</p>
+              <p className="mt-2 text-[0.8125rem] leading-relaxed text-ink-soft">
+                {f.desc}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="flex items-end justify-between">
+      <section className="section mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-gold-dark">
-              Featured
-            </p>
-            <h2 className="mt-1 font-serif text-3xl text-ink">Our Signature Picks</h2>
+            <p className="eyebrow">Featured</p>
+            <h2 className="mt-3 font-serif text-3xl text-ink sm:text-4xl">
+              Our Signature Picks
+            </h2>
           </div>
-          <Link href="/shop" className="text-sm font-medium text-gold-dark hover:underline">
-            View All →
+          <Link
+            href="/shop"
+            className="text-sm font-medium text-gold-dark underline-offset-4 hover:underline"
+          >
+            View all perfumes →
           </Link>
         </div>
 
@@ -173,13 +181,11 @@ export default async function HomePage() {
       </section>
 
       {FEATURED_TESTIMONIALS.length > 0 && (
-        <section className="border-t border-gold-light/40 bg-ink">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <section className="border-t border-line bg-ink">
+          <div className="section mx-auto max-w-6xl px-4 sm:px-6">
             <div className="max-w-2xl">
-              <p className="text-xs uppercase tracking-[0.3em] text-gold">
-                Customer Experiences
-              </p>
-              <h2 className="mt-3 font-serif text-3xl leading-tight text-cream sm:text-4xl">
+              <p className="eyebrow-light">Customer Experiences</p>
+              <h2 className="mt-3 font-serif text-3xl text-cream sm:text-4xl">
                 Real Experiences. Real Fragrances.
               </h2>
               <p className="mt-4 leading-relaxed text-cream/70">
@@ -197,7 +203,7 @@ export default async function HomePage() {
             <div className="mt-10 text-center">
               <Link
                 href="/feedback"
-                className="inline-block rounded-full border border-gold px-8 py-3 text-sm font-medium tracking-wide text-gold-light transition hover:bg-gold hover:text-white"
+                className="btn border border-gold/60 text-gold-light transition hover:bg-gold hover:text-white"
               >
                 View All Customer Experiences
               </Link>
