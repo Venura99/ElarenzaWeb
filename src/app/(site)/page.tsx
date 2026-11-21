@@ -4,7 +4,9 @@ import Image from "next/image";
 import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { BUSINESS } from "@/lib/constants";
+import { FEATURED_TESTIMONIALS } from "@/lib/testimonials";
 import ProductCard, { type ProductCardData } from "@/components/site/ProductCard";
+import TestimonialGallery from "@/components/site/TestimonialGallery";
 
 // Reads live data from the database on every request, so it must not be
 // prerendered at build time.
@@ -169,6 +171,40 @@ export default async function HomePage() {
           </div>
         )}
       </section>
+
+      {FEATURED_TESTIMONIALS.length > 0 && (
+        <section className="border-t border-gold-light/40 bg-ink">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+            <div className="max-w-2xl">
+              <p className="text-xs uppercase tracking-[0.3em] text-gold">
+                Customer Experiences
+              </p>
+              <h2 className="mt-3 font-serif text-3xl leading-tight text-cream sm:text-4xl">
+                Real Experiences. Real Fragrances.
+              </h2>
+              <p className="mt-4 leading-relaxed text-cream/70">
+                Don&apos;t just take our word for it. These are messages our
+                customers sent us on WhatsApp after their orders arrived —
+                shown exactly as they were written, with every personal detail
+                removed.
+              </p>
+            </div>
+
+            <div className="mt-10">
+              <TestimonialGallery items={FEATURED_TESTIMONIALS} />
+            </div>
+
+            <div className="mt-10 text-center">
+              <Link
+                href="/feedback"
+                className="inline-block rounded-full border border-gold px-8 py-3 text-sm font-medium tracking-wide text-gold-light transition hover:bg-gold hover:text-white"
+              >
+                View All Customer Experiences
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

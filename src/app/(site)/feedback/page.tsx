@@ -1,8 +1,11 @@
 import Image from "next/image";
 import { desc, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
+import { TESTIMONIALS } from "@/lib/testimonials";
 import FeedbackForm from "@/components/site/FeedbackForm";
 import StarRating from "@/components/site/StarRating";
+import Breadcrumbs from "@/components/site/Breadcrumbs";
+import TestimonialGallery from "@/components/site/TestimonialGallery";
 
 // Reads live data from the database on every request, so it must not be
 // prerendered at build time.
@@ -29,25 +32,89 @@ export default async function FeedbackPage() {
       : null;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-      <p className="text-xs uppercase tracking-[0.25em] text-gold-dark">Customer Feedback</p>
-      <h1 className="mt-2 font-serif text-4xl text-ink">What Our Customers Say</h1>
+    <div>
+      <div className="mx-auto max-w-4xl px-4 pt-12 sm:px-6">
+        <Breadcrumbs items={[{ name: "Customer Experiences" }]} />
+        <p className="text-xs uppercase tracking-[0.25em] text-gold-dark">
+          Customer Experiences
+        </p>
+        <h1 className="mt-2 font-serif text-4xl text-ink sm:text-5xl">
+          What Our Customers Say
+        </h1>
+        <p className="mt-4 max-w-2xl leading-relaxed text-ink-soft">
+          Every message and review below came from a real Elarenza customer
+          after their order arrived. We publish them as they were written — we
+          only remove the personal details.
+        </p>
 
-      {averageRating !== null && (
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <StarRating value={Math.round(averageRating)} />
-          <p className="text-sm text-ink-soft">
-            {averageRating.toFixed(1)} out of 5 · {feedback.length}{" "}
-            {feedback.length === 1 ? "review" : "reviews"}
-          </p>
+        <div className="mt-8 flex flex-wrap gap-x-10 gap-y-4 border-y border-gold-light/40 py-5">
+          {averageRating !== null && (
+            <div>
+              <div className="flex items-center gap-2">
+                <StarRating value={Math.round(averageRating)} />
+                <span className="font-serif text-xl text-ink">
+                  {averageRating.toFixed(1)}
+                </span>
+              </div>
+              <p className="mt-1 text-xs uppercase tracking-wide text-ink-soft">
+                Average of {feedback.length}{" "}
+                {feedback.length === 1 ? "review" : "reviews"}
+              </p>
+            </div>
+          )}
+          <div>
+            <p className="font-serif text-xl text-ink">{TESTIMONIALS.length}</p>
+            <p className="mt-1 text-xs uppercase tracking-wide text-ink-soft">
+              WhatsApp messages shared
+            </p>
+          </div>
+          <div>
+            <p className="font-serif text-xl text-ink">Islandwide</p>
+            <p className="mt-1 text-xs uppercase tracking-wide text-ink-soft">
+              Delivered across Sri Lanka
+            </p>
+          </div>
         </div>
-      )}
-
-      <div className="mt-8">
-        <FeedbackForm />
       </div>
 
-      <div className="mt-12">
+      {TESTIMONIALS.length > 0 && (
+        <section className="mt-14 border-y border-gold-light/40 bg-ink">
+          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
+            <div className="max-w-2xl">
+              <p className="text-xs uppercase tracking-[0.3em] text-gold">
+                Straight from WhatsApp
+              </p>
+              <h2 className="mt-3 font-serif text-3xl text-cream">
+                Messages from real orders
+              </h2>
+              <p className="mt-3 leading-relaxed text-cream/70">
+                Unedited screenshots of what customers told us after their
+                parcels arrived. Names, numbers and profile photos have been
+                removed; the words are theirs. Tap any message to read it in
+                full.
+              </p>
+            </div>
+            <div className="mt-10">
+              <TestimonialGallery items={TESTIMONIALS} initialCount={12} />
+            </div>
+          </div>
+        </section>
+      )}
+
+      <div className="mx-auto max-w-4xl px-4 pb-12 sm:px-6">
+        <div className="mt-14">
+          <h2 className="font-serif text-3xl text-ink">Written reviews</h2>
+          <p className="mt-2 text-sm text-ink-soft">
+            Reviews submitted through this page, published once we&apos;ve
+            checked them.
+          </p>
+        </div>
+
+        <div className="mt-8">
+          <FeedbackForm />
+        </div>
+
+        <div className="mt-12">
         {feedback.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-gold-light/60 p-10 text-center text-ink-soft">
             No feedback published yet. Be the first to share your experience!
@@ -101,6 +168,7 @@ export default async function FeedbackPage() {
             ))}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

@@ -53,3 +53,9 @@ next-env.d.ts
 .dev.vars
 .open-next/
 .wrangler/
+
+# Unredacted WhatsApp testimonial screenshots. These contain customers' phone
+# numbers, profile photos and last-seen status. Only the cropped copies under
+# public/images/testimonials are safe to publish, and git history is forever.
+/customer feedback screenshots/
+testimonial-review/
