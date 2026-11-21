@@ -3,14 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/db";
 import { newId, now } from "@/db/helpers";
-import { saveUploadedImages } from "@/lib/image-storage";
+import { checkSubmission } from "@/lib/spam-guard";
 
 export type FeedbackState = { error: string | null; success: boolean };
 
-// A "use server" module may only export async functions, so these stay local.
+// A "use server" module may only export async functions, so this stays local.
 const MAX_MESSAGE_LENGTH = 1000;
-const MAX_IMAGES = 3;
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 export async function submitFeedbackAction(
   _prevState: FeedbackState,
@@ -39,55 +37,33 @@ export async function submitFeedbackAction(
     return { error: "Please select a rating between 1 and 5 stars.", success: false };
   }
 
-  const imageFiles = formData
-    .getAll("images")
-    .filter((f): f is File => f instanceof File && f.size > 0);
+  const guard = checkSubmission(formData, message);
+  if (!guard.ok) {
+    // Logged so a wave of blocked attempts is visible, but the reason is never
+    // shown: telling a bot which check it failed is telling it what to change.
+    console.warn("[feedback] submission blocked", { reason: guard.reason });
 
-  if (imageFiles.length > MAX_IMAGES) {
-    return { error: `Please attach at most ${MAX_IMAGES} photos.`, success: false };
-  }
-
-  for (const file of imageFiles) {
-    if (!file.type.startsWith("image/")) {
-      return { error: "Only image files can be attached.", success: false };
-    }
-    if (file.size > MAX_IMAGE_BYTES) {
-      return { error: "Each photo must be under 5MB.", success: false };
-    }
-  }
-
-  let uploaded: { url: string; publicId: string | null }[] = [];
-  if (imageFiles.length > 0) {
-    try {
-      uploaded = await saveUploadedImages(imageFiles, { folder: "elarenza/feedback" });
-    } catch {
+    if (guard.reason === "contains a link") {
       return {
-        error: "We couldn't upload your photos. Please try again, or submit without them.",
+        error: "Please remove any web links from your review and try again.",
         success: false,
       };
     }
+
+    return {
+      error: "We couldn't accept that submission. Please try again in a moment.",
+      success: false,
+    };
   }
 
-  const feedbackId = newId();
   await db.insert(schema.feedback).values({
-    id: feedbackId,
+    id: newId(),
     customerName,
     message,
     rating,
     isApproved: false,
     createdAt: now(),
   });
-
-  if (uploaded.length > 0) {
-    await db.insert(schema.feedbackImages).values(
-      uploaded.map((img) => ({
-        id: newId(),
-        url: img.url,
-        publicId: img.publicId,
-        feedbackId,
-      }))
-    );
-  }
 
   revalidatePath("/feedback");
   revalidatePath("/admin/feedback");

@@ -3,15 +3,16 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { and, desc, eq, ne, or } from "drizzle-orm";
+import { and, eq, ne, or } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { BUSINESS } from "@/lib/constants";
 import { cloudinaryBlurUrl } from "@/lib/cloudinary-blur";
 import { brandSlug, toProductCards } from "@/lib/collections";
+import { TESTIMONIALS } from "@/lib/testimonials";
 import AddToCartPanel from "@/components/site/AddToCartPanel";
 import ProductCard from "@/components/site/ProductCard";
 import Breadcrumbs from "@/components/site/Breadcrumbs";
-import StarRating from "@/components/site/StarRating";
+import TestimonialGallery from "@/components/site/TestimonialGallery";
 
 // generateMetadata and the page body both need the product. cache() keeps that
 // to a single query per request.
@@ -82,14 +83,6 @@ export default async function ProductDetailPage({
   const genderLabel =
     product.gender === "UNISEX" ? "Unisex" : product.gender === "MALE" ? "For Him" : "For Her";
 
-  // Reviews on this site are about Elarenza as a shop rather than any single
-  // fragrance, so they are shown here as shop reviews and labelled as such.
-  const reviews = await db.query.feedback.findMany({
-    where: eq(schema.feedback.isApproved, true),
-    orderBy: [desc(schema.feedback.createdAt)],
-    limit: 3,
-  });
-
   // Same house first, then anything else aimed at the same person. Gives every
   // product page outbound links into the catalogue instead of being a dead end.
   const relatedPool = await db.query.products.findMany({
@@ -117,6 +110,16 @@ export default async function ProductDetailPage({
   ).slice(0, 4);
 
   const mainBlur = cloudinaryBlurUrl(mainImage);
+
+  // Four WhatsApp messages rather than the written reviews, which are about
+  // the shop rather than this fragrance. Offset by the slug so neighbouring
+  // product pages do not all show the same four.
+  const offset =
+    [...product.slug].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % TESTIMONIALS.length;
+  const productTestimonials = [
+    ...TESTIMONIALS.slice(offset),
+    ...TESTIMONIALS.slice(0, offset),
+  ].slice(0, 4);
   const prices = product.variants.map((v) => v.price);
   const inStock = product.variants.some((v) => v.stock > 0);
 
@@ -264,36 +267,29 @@ export default async function ProductDetailPage({
         </section>
       )}
 
-      {reviews.length > 0 && (
-        <section className="mt-16 border-t border-gold-light/40 pt-10">
+      {productTestimonials.length > 0 && (
+        <section className="mt-16 border-t border-line pt-12">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 className="font-serif text-2xl text-ink">What customers say</h2>
+            <div>
+              <p className="eyebrow">Customer Experiences</p>
+              <h2 className="mt-3 font-serif text-2xl text-ink sm:text-3xl">
+                What customers say
+              </h2>
+            </div>
             <Link
               href="/feedback"
-              className="text-sm font-medium text-gold-dark hover:underline"
+              className="text-sm font-medium text-gold-dark underline-offset-4 hover:underline"
             >
-              Read all reviews
+              See all messages →
             </Link>
           </div>
-          <p className="mt-1 text-sm text-ink-soft">
-            Reviews of Elarenza from customers across Sri Lanka.
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
+            Messages customers sent us on WhatsApp after their orders arrived.
+            Tap any one to read it in full.
           </p>
 
-          <div className="mt-6 grid gap-5 sm:grid-cols-3">
-            {reviews.map((review) => (
-              <div
-                key={review.id}
-                className="rounded-2xl border border-gold-light/40 bg-white p-5"
-              >
-                <StarRating value={review.rating} />
-                <p className="mt-3 line-clamp-5 whitespace-pre-line text-sm leading-relaxed text-ink-soft">
-                  {review.message}
-                </p>
-                <p className="mt-3 text-xs font-medium text-ink">
-                  {review.customerName}
-                </p>
-              </div>
-            ))}
+          <div className="mt-8">
+            <TestimonialGallery items={productTestimonials} columns={4} />
           </div>
         </section>
       )}

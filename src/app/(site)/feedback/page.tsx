@@ -2,6 +2,7 @@ import Image from "next/image";
 import { desc, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { TESTIMONIALS } from "@/lib/testimonials";
+import { issueFormToken } from "@/lib/spam-guard";
 import FeedbackForm from "@/components/site/FeedbackForm";
 import StarRating from "@/components/site/StarRating";
 import Breadcrumbs from "@/components/site/Breadcrumbs";
@@ -111,7 +112,7 @@ export default async function FeedbackPage() {
         </div>
 
         <div className="mt-8">
-          <FeedbackForm />
+          <FeedbackForm formToken={issueFormToken()} />
         </div>
 
         <div className="mt-12">
