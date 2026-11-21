@@ -157,7 +157,16 @@ export async function createPayzyCheckout(fields: PayzyFields): Promise<string> 
 
   const res = await fetch(`${baseUrl}/checkout/custom-checkout`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      // A Worker's fetch sends no User-Agent. Payzy's production host sits
+      // behind a WAF, and the default bot rules there challenge requests that
+      // arrive without one — which the same request sent from a machine with
+      // a User-Agent passes. Generic on purpose: nothing identifying goes to
+      // the gateway that the signed fields do not already carry.
+      "User-Agent": "StorefrontCheckout/1.0",
+    },
     body: JSON.stringify(body),
   });
 
