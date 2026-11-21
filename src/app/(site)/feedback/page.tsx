@@ -27,19 +27,12 @@ export default async function FeedbackPage() {
     with: { images: true },
   });
 
-  const averageRating =
-    feedback.length > 0
-      ? feedback.reduce((sum, f) => sum + f.rating, 0) / feedback.length
-      : null;
-
   return (
     <div>
       <div className="mx-auto max-w-4xl px-4 pt-12 sm:px-6">
         <Breadcrumbs items={[{ name: "Customer Experiences" }]} />
-        <p className="text-xs uppercase tracking-[0.25em] text-gold-dark">
-          Customer Experiences
-        </p>
-        <h1 className="mt-2 font-serif text-4xl text-ink sm:text-5xl">
+        <p className="eyebrow">Customer Experiences</p>
+        <h1 className="mt-3 font-serif text-4xl text-ink sm:text-5xl">
           What Our Customers Say
         </h1>
         <p className="mt-4 max-w-2xl leading-relaxed text-ink-soft">
@@ -47,35 +40,6 @@ export default async function FeedbackPage() {
           after their order arrived. We publish them as they were written — we
           only remove the personal details.
         </p>
-
-        <div className="mt-8 flex flex-wrap gap-x-10 gap-y-4 border-y border-gold-light/40 py-5">
-          {averageRating !== null && (
-            <div>
-              <div className="flex items-center gap-2">
-                <StarRating value={Math.round(averageRating)} />
-                <span className="font-serif text-xl text-ink">
-                  {averageRating.toFixed(1)}
-                </span>
-              </div>
-              <p className="mt-1 text-xs uppercase tracking-wide text-ink-soft">
-                Average of {feedback.length}{" "}
-                {feedback.length === 1 ? "review" : "reviews"}
-              </p>
-            </div>
-          )}
-          <div>
-            <p className="font-serif text-xl text-ink">{TESTIMONIALS.length}</p>
-            <p className="mt-1 text-xs uppercase tracking-wide text-ink-soft">
-              WhatsApp messages shared
-            </p>
-          </div>
-          <div>
-            <p className="font-serif text-xl text-ink">Islandwide</p>
-            <p className="mt-1 text-xs uppercase tracking-wide text-ink-soft">
-              Delivered across Sri Lanka
-            </p>
-          </div>
-        </div>
       </div>
 
       {TESTIMONIALS.length > 0 && (
