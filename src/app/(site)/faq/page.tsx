@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BUSINESS } from "@/lib/constants";
 import { formatLKR } from "@/lib/format";
-import { getDeliveryFee, getPayzyFeePercent } from "@/lib/settings";
+import { getDeliveryFee } from "@/lib/settings";
 import Breadcrumbs from "@/components/site/Breadcrumbs";
 
-// Delivery charge and online payment fee are quoted from live settings, so
-// this page cannot contradict checkout or the terms page.
+// The delivery charge is quoted from live settings so this page cannot
+// contradict checkout or the terms page. The card fee rate is deliberately
+// not published — only the amount, at checkout.
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -17,10 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default async function FaqPage() {
-  const [deliveryFee, payzyFeePercent] = await Promise.all([
-    getDeliveryFee(),
-    getPayzyFeePercent(),
-  ]);
+  const deliveryFee = await getDeliveryFee();
 
   const faqs: { question: string; answer: string }[] = [
     {
@@ -59,7 +57,8 @@ export default async function FaqPage() {
     },
     {
       question: "Can I pay online by card?",
-      answer: `Yes. Card payments are handled by PayZy on their own secure page, so your card details never reach our website. An online payment fee of ${payzyFeePercent}% is added to cover the payment provider's charge, and it is shown as a separate line at checkout before you pay. Cash on delivery has no such fee.`,
+      answer:
+        "Yes. Card payments are handled by PayZy on their own secure page, so your card details never reach our website. An online payment fee is added to cover the payment provider's charge. It is shown as its own line on the checkout page, so you always see the exact amount before you confirm anything. Cash on delivery has no such fee.",
     },
     {
       question: "Can I return a perfume if I don't like it?",

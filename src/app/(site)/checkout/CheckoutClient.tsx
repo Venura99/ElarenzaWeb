@@ -155,9 +155,12 @@ export default function CheckoutClient({
                 <span className="min-w-0">
                   <span className="flex items-center gap-2">
                     <PayzyMark />
+                    {/* Payzy asked that the rate itself is not published —
+                        the customer still sees the exact fee in the summary
+                        before confirming. */}
                     {payzyFeePercent > 0 && (
                       <span className="rounded-full bg-cream-soft px-2 py-0.5 text-[11px] text-ink-soft">
-                        +{payzyFeePercent}% fee
+                        fee applies
                       </span>
                     )}
                   </span>
@@ -266,9 +269,7 @@ export default function CheckoutClient({
             </div>
             {payzyFee > 0 && (
               <div className="flex justify-between">
-                <span className="text-ink-soft">
-                  Payzy fee ({payzyFeePercent}%)
-                </span>
+                <span className="text-ink-soft">Payzy fee</span>
                 <span className="font-medium text-ink">{formatLKR(payzyFee)}</span>
               </div>
             )}

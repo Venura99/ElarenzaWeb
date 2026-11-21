@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BUSINESS } from "@/lib/constants";
 import { formatLKR } from "@/lib/format";
-import { getDeliveryFee, getPayzyFeePercent } from "@/lib/settings";
+import { getDeliveryFee } from "@/lib/settings";
 import { PolicyShell, PolicySection, PolicyList } from "@/components/site/PolicyPage";
 
 export const metadata: Metadata = {
@@ -11,15 +11,13 @@ export const metadata: Metadata = {
   alternates: { canonical: "/terms" },
 };
 
-// The delivery charge and online payment fee are quoted from the live settings
-// so this page cannot drift out of step with what checkout actually charges.
+// The delivery charge is quoted from the live settings so this page cannot
+// drift out of step with what checkout actually charges. The card fee rate is
+// deliberately not published here — only the amount, at checkout.
 export const dynamic = "force-dynamic";
 
 export default async function TermsPage() {
-  const [deliveryFee, payzyFeePercent] = await Promise.all([
-    getDeliveryFee(),
-    getPayzyFeePercent(),
-  ]);
+  const deliveryFee = await getDeliveryFee();
 
   return (
     <PolicyShell
@@ -81,10 +79,11 @@ export default async function TermsPage() {
             order.
           </li>
           <li>
-            If you choose to pay online by card, an online payment fee of{" "}
-            <strong>{payzyFeePercent}%</strong> is added to cover the payment
-            provider&apos;s charge. It is shown as a separate line at checkout
-            before you pay. Cash on delivery has no such fee.
+            If you choose to pay online by card, an online payment fee is added
+            to cover the payment provider&apos;s charge. It is shown as its own
+            line on the checkout page, so the exact amount is always in front of
+            you before you confirm. Cash on delivery has no such fee. If you
+            would like to know how the fee is calculated, just ask us.
           </li>
           <li>
             The total shown at checkout is the final amount payable. We may
